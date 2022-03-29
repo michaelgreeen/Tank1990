@@ -1,13 +1,6 @@
 import pygame
 from Network import Network
-
-SCREEN_WIDTH = 1440
-SCREEN_HEIGHT = 900
-win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Client")
-
-clientNumber = 0
-
+from Common import *
 
 class Player():
     def __init__(self, x, y, width, height, color):
@@ -41,15 +34,6 @@ class Player():
         self.rect = (self.x, self.y, self.width, self.height)
 
 
-def read_pos(str):
-    str = str.split(",")
-    return int(str[0]), int(str[1])
-
-
-def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
-
-
 def redrawWindow(win,player, player2):
     win.fill((255,255,255))
     player.draw(win)
@@ -58,6 +42,9 @@ def redrawWindow(win,player, player2):
 
 
 def main():
+    win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Client")
+    clientNumber = 0
     run = True
     n = Network()
     startPos = read_pos(n.getPos())
