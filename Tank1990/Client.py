@@ -17,7 +17,7 @@ class Player():
         self.height = height
         self.color = color
         self.rect = (x,y,width,height)
-        self.vel = 20
+        self.vel = 10
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, self.rect)
@@ -25,26 +25,19 @@ class Player():
     def move(self):
         keys = pygame.key.get_pressed()
 
-        if not keys[pygame.K_LEFT] or self.x < 0:
-            pass
-        else:
+        if keys[pygame.K_LEFT] and (self.x - self.vel >= 0):
             self.x -= self.vel
-        if not keys[pygame.K_RIGHT] or (self.x + self.width >= SCREEN_WIDTH):
-            pass
-        else:
+        if keys[pygame.K_RIGHT] and (self.x + self.width + self.vel <= SCREEN_WIDTH):
             self.x += self.vel
-        if not keys[pygame.K_UP] or (self.y < 0):
-            pass
-        else:
+        if keys[pygame.K_UP] and (self.y - self.vel >= 0):
             self.y -= self.vel
-        if not keys[pygame.K_DOWN] or (self.y + self.height >= SCREEN_HEIGHT):
-            pass
-        else:
+        if keys[pygame.K_DOWN] and (self.y + self.vel <= 0):
             self.y += self.vel
 
         self.update()
 
     def update(self):
+        self.center = ((self.x +self.width)/2,(self.y + self.width)/2)
         self.rect = (self.x, self.y, self.width, self.height)
 
 
