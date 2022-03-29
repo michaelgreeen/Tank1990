@@ -31,7 +31,7 @@ class Player():
             self.x += self.vel
         if keys[pygame.K_UP] and (self.y - self.vel >= 0):
             self.y -= self.vel
-        if keys[pygame.K_DOWN] and (self.y + self.vel <= 0):
+        if keys[pygame.K_DOWN] and (self.y + self.height + self.vel <= SCREEN_HEIGHT):
             self.y += self.vel
 
         self.update()
