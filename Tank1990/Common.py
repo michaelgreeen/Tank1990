@@ -1,0 +1,21 @@
+SCREEN_WIDTH = 1440
+SCREEN_HEIGHT = 900
+IP_ADDRESS = "25.59.159.41"
+PORT = 5555
+VEHICLE_WIDTH = 100
+VEHICLE_HEIGHT = 100
+
+
+STARTING_POS_CLIENT1 = (0,0)
+STARTING_POS_CLIENT2 = (SCREEN_WIDTH - VEHICLE_WIDTH,0)
+STARTING_POS_CLIENT3 = (0,SCREEN_HEIGHT - VEHICLE_HEIGHT)
+STARTING_POS_CLIENT4 = (0,SCREEN_HEIGHT - VEHICLE_HEIGHT)
+
+
+def read_pos(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])

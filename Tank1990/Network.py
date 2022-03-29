@@ -1,11 +1,11 @@
 import socket
-
+import Common
 
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = "153.19.213.179"
-        self.port = 5555
+        self.server = Common.IP_ADDRESS
+        self.port = Common.PORT
         self.addr = (self.server, self.port)
         self.pos = self.connect()
 
@@ -15,13 +15,13 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            return self.client.recv(2048).decode()
+            return self.client.recv(2048/2).decode()
         except:
             pass
 
     def send(self, data):
         try:
             self.client.send(str.encode(data))
-            return self.client.recv(2048).decode()
+            return self.client.recv(2048/2).decode()
         except socket.error as e:
             print(e)
