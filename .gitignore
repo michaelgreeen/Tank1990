@@ -112,7 +112,7 @@ celerybeat.pid
 # venv.bak/
 
 .idea
-
+.vscode
 
 # Spyder project settings
 .spyderproject
