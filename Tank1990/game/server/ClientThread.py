@@ -8,7 +8,7 @@ from Tank1990.game.server.Server import Server
 
 def clientThread(server: Server, connection: socket, playerNumber: int):
     connection.send(str.encode(make_pos_team((CLIENT_STARTING_POSITIONS[playerNumber][0], CLIENT_STARTING_POSITIONS[playerNumber][1], "RED"))))
-    connection.recv(1024)
+    
     player: Player = Player(CLIENT_STARTING_POSITIONS[playerNumber][0], CLIENT_STARTING_POSITIONS[playerNumber][1], VEHICLE_WIDTH, VEHICLE_HEIGHT, "") 
     PLAYER_TEAMS_LOCK.acquire()
     color: str = server.addPlayer(player)
