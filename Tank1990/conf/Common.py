@@ -3,7 +3,7 @@ from time import sleep
 
 SCREEN_WIDTH = 1440
 SCREEN_HEIGHT = 900
-IP_ADDRESS = "127.0.0.1"
+IP_ADDRESS = "25.58.165.15"
 PORT = 5555
 VEHICLE_WIDTH = 100
 VEHICLE_HEIGHT = 100
@@ -18,14 +18,12 @@ STARTING_POS_CLIENT3 = (0,SCREEN_HEIGHT - VEHICLE_HEIGHT)
 STARTING_POS_CLIENT4 = (SCREEN_WIDTH - VEHICLE_WIDTH, SCREEN_HEIGHT - VEHICLE_HEIGHT)
 
 
-def read_pos_team(str: str):
-    print(str)
-    str = str.split(",")
-    return int(str[0]), int(str[1]), str[2]
+def read_pos_team(string: str):
+    string = string.split(",")
+    return int(string[0]), int(string[1]), string[2]
 
 
 def make_pos_team(tup):
-    print(str(tup[0]) + "," + str(tup[1]) + "," + tup[2])
-    return str(tup[0]) + "," + str(tup[1]) + "," + tup[2]
+    return str(tup[0]) + "," + str(tup[1]) + "," + str(tup[2])
 
 

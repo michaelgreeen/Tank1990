@@ -41,7 +41,7 @@ class Server:
             self.socket.bind((ipAddress, port))
         except socket.error as e:
             str(e)
-        self.socket.listen(5)
+        self.socket.listen(4)
         print("Waiting for a connection, Server Started")
 
         
