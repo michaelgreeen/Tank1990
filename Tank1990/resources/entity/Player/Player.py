@@ -1,5 +1,6 @@
 import pygame
-from conf.Common import *
+from Tank1990.conf.Common import *
+
 
 class Player():
     def __init__(self, x, y, width, height, color):
@@ -10,6 +11,11 @@ class Player():
         self.color = color
         self.rect = (x,y,width,height)
         self.vel = 10
+        if self.color == RED:
+            self.color_string = "RED"
+        else:
+            self.color_string = "GREEN"
+        
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, self.rect)

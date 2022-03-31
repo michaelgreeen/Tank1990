@@ -1,11 +1,11 @@
 import socket
-import Common
+from Tank1990.conf.Common import *
 
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = Common.IP_ADDRESS
-        self.port = Common.PORT
+        self.server = IP_ADDRESS
+        self.port = PORT
         self.addr = (self.server, self.port)
         self.pos = self.connect()
 

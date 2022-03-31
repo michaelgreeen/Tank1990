@@ -1,5 +1,4 @@
 {
     "python.analysis.extraPaths": [
-        "./Tank1990/conf"
     ]
 }

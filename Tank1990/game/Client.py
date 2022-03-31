@@ -1,42 +1,66 @@
+from typing import List
 import pygame
-from network.Network import Network
-from resources.entity.Player import Player
-from conf.Common import *
+from Tank1990.network.Network import Network
+from Tank1990.resources.entity.Player.Player import Player
+from Tank1990.conf.Common import *
 
 
 
+class Client:
+    def __init__(self):
+        self.win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Client")
+        self.network: Network = Network()
+        startPos = read_pos_team(self.network.getPos())
+        self.running: bool = True
+        width = VEHICLE_WIDTH
+        height = VEHICLE_HEIGHT
+        if startPos[2] == "RED":
+            color = RED
+        else:
+            color = GREEN
+        self.player = Player(startPos[0], startPos[1], width, height, color)
+        #Information about other players stored in format [0] : x_pos, [1] : y_pos, [2] color
+        self.serverPlayerInfo: List[tuple] = []
 
-def redrawWindow(win,player, player2):
-    win.fill((255,255,255))
-    player.draw(win)
-    player2.draw(win)
-    pygame.display.update()
+    def initPlayerInfoOnServer(self):
+        print("INITIALIZING PLAYER ON SERVER \n")
+        print("X POS: " + self.player.x + "\t" + "Y POS: " + self.player.y)
+        self.network.send(make_pos_team((self.player.x, self.player.y, [self.player.color_string])))
+
+    def updatePlayerInfoOnServer(self):
+        self.serverPlayerInfo.clear()
+        self.serverPlayerInfo.append(self.network.send(make_pos_team((self.player.x, self.player.y, [self.player.color_string]))))
+
+
+    def getPlayersFromServer(self):
+        read_pos_team(self.network.send(make_pos_team((self.player.x, self.player.y, [self.player.color_string]))))
+
+
+    def redrawWindow(self):
+        self.win.fill((255, 255, 255))
+        for playerInfo in self.serverPlayerInfo:
+            createdPlayer = Player(playerInfo[0], playerInfo[1], VEHICLE_WIDTH, VEHICLE_HEIGHT, playerInfo[2])
+            createdPlayer.draw(self.win)
+        pygame.display.update()
+
 
 
 def main():
-    win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Client")
-    clientNumber = 0
-    run = True
-    n = Network()
-    startPos = read_pos(n.getPos())
-    p = Player(startPos[0],startPos[1],100,100,(0,255,0))
-    p2 = Player(0,0,100,100,(255,0,0))
+    client = Client()
     clock = pygame.time.Clock()
+    client.initPlayerInfoOnServer()
 
-    while run:
+    while client.running:
         clock.tick(60)
-        p2Pos = read_pos(n.send(make_pos((p.x, p.y))))
-        p2.x = p2Pos[0]
-        p2.y = p2Pos[1]
-        p2.update()
-
+        client.updatePlayerInfoOnServer()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                client.running = False
                 pygame.quit()
+        client.player.move()
+        client.redrawWindow()
 
-        p.move()
-        redrawWindow(win, p, p2)
 
-main()
+if __name__ == "__main__":
+    main()
