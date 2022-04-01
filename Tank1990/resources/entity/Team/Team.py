@@ -1,9 +1,10 @@
+from typing import List
 from Tank1990.resources.entity.Player.Player import Player
 class Team:
 
     def __init__(self, name: str):
         self.name = name
-        self.players: Player = []
+        self.players: List[Player] = []
 
     def getPlayers(self):
         return self.players
