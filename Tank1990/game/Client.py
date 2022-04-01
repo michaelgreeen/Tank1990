@@ -29,7 +29,7 @@ class Client:
         self.network.send(make_pos_team((self.player.x, self.player.y, self.player.color_string)))
 
     def updatePlayerInfoOnServer(self):
-        player_info_string_list = self.network.send("PLAYER_LIST_REQUEST")
+        player_info_string_list = self.network.send(make_pos_team((self.player.x, self.player.y, self.player.color_string)))
         print(player_info_string_list)
         self.serverPlayerInfo.clear()
         player_info_string_list = player_info_string_list.split("\n")
@@ -49,7 +49,6 @@ class Client:
 
     def redrawWindow(self):
         self.win.fill((255, 255, 255))
-        self.updatePlayerInfoOnServer()
         for playerInfo in self.serverPlayerInfo:
             createdPlayer = Player(playerInfo[0], playerInfo[1], VEHICLE_WIDTH, VEHICLE_HEIGHT, playerInfo[2])
             createdPlayer.draw(self.win)
@@ -69,7 +68,7 @@ def main():
                 client.running = False
                 pygame.quit()
         client.player.move()
-       # client.updatePlayerInfoOnServer()
+        client.updatePlayerInfoOnServer()
         client.redrawWindow()
 
 

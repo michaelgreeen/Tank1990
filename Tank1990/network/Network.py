@@ -16,13 +16,19 @@ class Network:
         try:
             self.client.connect(self.addr)
             print("Connection succesfull")
-            return self.client.recv(2048//2).decode()
+            receive = self.client.recv(2048//2).decode()
+            print("Received: " + receive)
+            return receive
         except:
+            print("Receive failed")
             pass
 
     def send(self, data):
         try:
+            print("Sending: " + data)
             self.client.send(str.encode(data))
-            return self.client.recv(2048//2).decode()
+            receive = self.client.recv(2048//2).decode()
+            print("Received: " + receive)
+            return receive
         except socket.error as e:
             print(e)

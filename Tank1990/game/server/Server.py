@@ -24,10 +24,15 @@ class Server:
         teamRed:Team = self.teams.get("Red")
         if len(teamGreen.getPlayers()) > len(teamRed.getPlayers()):
             teamRed.addPlayer(player)
+            player.color_string = "RED"
+            player.color = RED
             return "RED"
         else:
             teamGreen.addPlayer(player)
+            player.color_string = "GREEN"
+            player.color = GREEN
             return "GREEN"
+            
     def removePlayer(self, player: Player):
         teamGreen:Team = self.teams.get("Green")
         teamRed:Team = self.teams.get("Red")

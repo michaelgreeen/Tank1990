@@ -29,29 +29,23 @@ def clientThread(server: Server, connection: socket, playerNumber: int):
             if not data:
                 print("Disconnected")
                 break
-            elif data == "PLAYER_LIST_REQUEST":
-                print("debug")
-                player_list = server.teams.get("Red").getPlayers() + server.teams.get("Green").getPlayers()
-                for player in player_list:
-                    reply += str(player.x) + "," + str(player.y) + "," + player.color_string + "\n"
-                print("Player List: " + reply)
-                connection.sendall(str.encode(reply))
-                
 
             else:
                 player_info = read_pos_team(data)
                 player.x = player_info[0]
                 player.y = player_info[1]
                 player.color = player_info[2]
-                reply = (player.x, player.y, color)
-                connection.sendall(str.encode(make_pos_team(reply)))
+                player_list = server.teams.get("Red").getPlayers() + server.teams.get("Green").getPlayers()
+                for player in player_list:
+                    reply += str(player.x) + "," + str(player.y) + "," + player.color_string + "\n"
+                connection.sendall(str.encode(reply))
 
             print("Received: ", data)
             print("Sending : ", reply)
-
             
         except:
             break
+
     PLAYER_TEAMS_LOCK.acquire()
     server.removePlayer(player)
     PLAYER_TEAMS_LOCK.release()
