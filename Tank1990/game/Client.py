@@ -20,6 +20,7 @@ class Client:
         else:
             color = GREEN
         self.player = Player(startPos[0], startPos[1], width, height, color)
+        self.player.color_string = startPos[2]
         #Information about other players stored in format [0] : x_pos, [1] : y_pos, [2] color
         self.serverPlayerInfo = []
 

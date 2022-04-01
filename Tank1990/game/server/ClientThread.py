@@ -12,9 +12,10 @@ def clientThread(server: Server, connection: socket, playerNumber: int):
     PLAYER_TEAMS_LOCK.acquire()
     color: str = server.addPlayer(player)
     PLAYER_TEAMS_LOCK.release()
+    player.color_string = color
     print("PLAYER LIST:\n")
-    for player in server.teams.get("Red").getPlayers() + server.teams.get("Green").getPlayers():
-        print(str(player.x) + " " + str(player.y) + " " + player.color_string + "\n")
+    for player_object in server.teams.get("Red").getPlayers() + server.teams.get("Green").getPlayers():
+        print(str(player_object.x) + " " + str(player_object.y) + " " + player_object.color_string + "\n")
     if color == "RED":
         player.color = RED
     else:
@@ -36,8 +37,8 @@ def clientThread(server: Server, connection: socket, playerNumber: int):
                 player.y = player_info[1]
                 player.color = player_info[2]
                 player_list = server.teams.get("Red").getPlayers() + server.teams.get("Green").getPlayers()
-                for player in player_list:
-                    reply += str(player.x) + "," + str(player.y) + "," + player.color_string + "\n"
+                for player_object in player_list:
+                    reply += str(player_object.x) + "," + str(player_object.y) + "," + player_object.color_string + "\n"
                 connection.sendall(str.encode(reply))
 
             print("Received: ", data)
@@ -47,7 +48,11 @@ def clientThread(server: Server, connection: socket, playerNumber: int):
             break
 
     PLAYER_TEAMS_LOCK.acquire()
+    print("REMOVING: " + str(player.x) + "," + str(player.y) + "," + player.color_string + "\n")
     server.removePlayer(player)
     PLAYER_TEAMS_LOCK.release()
     print("Lost connection")
+    print("CURRENT PLAYER LIST: \n")
+    for player_object in server.teams.get("Red").getPlayers() + server.teams.get("Green").getPlayers():
+        print(str(player_object.x) + " " + str(player_object.y) + " " + player_object.color_string + "\n")
     connection.close()
