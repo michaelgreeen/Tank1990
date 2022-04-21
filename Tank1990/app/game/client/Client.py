@@ -58,6 +58,8 @@ class Client:
         for playerInfo in self.serverPlayerInfo:
             tank = Tank(playerInfo[1], playerInfo[2], VEHICLE_WIDTH, VEHICLE_HEIGHT, playerInfo[3],playerInfo[4])
             tank.draw(self.win)
+        for bullet in self.bulletObjects:
+            bullet.draw(self.win)
         pygame.display.update()
 
 
@@ -82,8 +84,7 @@ def main():
             bullet.update()
             if bullet.x > SCREEN_WIDTH or bullet.x < 0 or bullet.y < 0 or bullet.y > SCREEN_HEIGHT:
                 client.bulletObjects.remove(bullet)
-            else:
-                bullet.draw(client.win)
+
 
         client.redrawWindow()
 

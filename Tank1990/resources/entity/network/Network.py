@@ -16,7 +16,7 @@ class Network:
         try:
             self.client.connect(self.addr)
             print("Connection succesfull")
-            receive = self.client.recv(2048//1)
+            receive = self.client.recv(4096//1)
             print("Received: ", receive)
             return receive
         except:
@@ -27,8 +27,9 @@ class Network:
         try:
             print("Sending: ", data)
             self.client.send(data)
-            receive = self.client.recv(2048//1)
+            receive = self.client.recv(4096//1)
             print("Received: ", receive)
             return receive
         except socket.error as e:
+            print("Receive Failed")
             print(e)

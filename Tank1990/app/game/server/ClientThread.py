@@ -32,7 +32,7 @@ def clientThread(server, connection: socket, playerNumber: int):
     while True:
         try:
             
-            data = pickle.loads(connection.recv(2048//1))
+            data = pickle.loads(connection.recv(4096//1))
             if not data:
                 print("Disconnected")
                 break
@@ -45,12 +45,13 @@ def clientThread(server, connection: socket, playerNumber: int):
                 player_list = server.teams.get("Red").players + server.teams.get("Green").players
                 for player_object in player_list:
                     reply.addTankUpdateMessage(tankUpdateMessage(player_object.id, player_object.tank.x, player_object.tank.y, player_object.tank.direction_vector, player_object.team.color))
-                connection.sendall(pickle.dumps(reply))
+                connection.sendall(reply.getMessage())
 
             elif isinstance(data, bulletCreateMessage):
                 sent_to_player_flags = [False, False, False, False]
-                server.bullet_objects_queue.append((pickle.loads(data), sent_to_player_flags))
-                connection.sendall(data)
+                server.bullet_objects_queue.append((data.bullet, sent_to_player_flags))
+                reply = data
+                connection.sendall(reply.getMessage())
 
             elif isinstance(data, bulletUpdateRequest):
                 reply = data

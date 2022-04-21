@@ -55,7 +55,7 @@ class Server:
             self.clients.append(connection)
             print("Connected to: ", address)
             thread = Thread(target = clientThread, args = (self, connection, len(self.teams.get("Red").players + self.teams.get("Green").players)))
-            thread.run()
+            thread.start()
 
 
 def main():
