@@ -19,7 +19,7 @@ def clientThread(server, connection: socket, playerNumber: int):
     initialDirectionVector = CLIENT_STARTING_DIRECTION_VECTOR[playerNumber]
     player: Player = Player(playerNumber)
     server.addPlayer(player)
-    playerTank: Tank = Tank(spawnPoint[0], spawnPoint[1], VEHICLE_WIDTH, VEHICLE_HEIGHT, initialDirectionVector, player.team.color)
+    playerTank: Tank = Tank(spawnPoint[0], spawnPoint[1],  initialDirectionVector, player.team.color)
     player.assignTank(playerTank)
     initPlayerMessage = playerCreateMessage(player)
     print("SENDING: ", initPlayerMessage)
@@ -90,5 +90,5 @@ def clientThread(server, connection: socket, playerNumber: int):
     print("Lost connection")
     print("CURRENT PLAYER LIST: \n")
     for player_object in server.teams.get("Red").players + server.teams.get("Green").players:
-        print(str(player_object.tank.x) + " " + str(player_object.tank.y) + " " + player_object.team.get + "\n")
+        print(str(player_object.tank.x) + " " + str(player_object.tank.y) + " " + player_object.team.name + "\n")
     connection.close()

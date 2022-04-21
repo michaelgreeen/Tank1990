@@ -56,7 +56,7 @@ class Client:
     def redrawWindow(self):
         self.win.fill((0, 0, 0))
         for playerInfo in self.serverPlayerInfo:
-            tank = Tank(playerInfo[1], playerInfo[2], VEHICLE_WIDTH, VEHICLE_HEIGHT, playerInfo[3],playerInfo[4])
+            tank = Tank(playerInfo[1], playerInfo[2], playerInfo[3], playerInfo[4])
             tank.draw(self.win)
         for bullet in self.bulletObjects:
             bullet.draw(self.win)
