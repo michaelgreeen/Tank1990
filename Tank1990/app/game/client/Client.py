@@ -49,12 +49,9 @@ class Client:
             self.bulletObjects.append(bullet_creation_message.bullet)
 
 
-            
-            
-    
-
-    def redrawWindow(self):
+    def redrawWindow(self,background):
         self.win.fill((0, 0, 0))
+        self.win.blit(background,(0,0))
         for playerInfo in self.serverPlayerInfo:
             tank = Tank(playerInfo[1], playerInfo[2], playerInfo[3], playerInfo[4])
             tank.draw(self.win)
@@ -67,7 +64,7 @@ class Client:
 def main():
     client = Client()
     clock = pygame.time.Clock()
-
+    background = pygame.image.load("..\\img\\Dirt1.png")
     while client.running:
         clock.tick(60)
         for event in pygame.event.get():
@@ -86,7 +83,7 @@ def main():
                 client.bulletObjects.remove(bullet)
 
 
-        client.redrawWindow()
+        client.redrawWindow(background)
 
 
 if __name__ == "__main__":
