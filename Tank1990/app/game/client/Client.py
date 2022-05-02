@@ -26,7 +26,7 @@ class Client:
         #List of players on the server
         self.serverPlayerInfo = []
         self.bulletObjects = []
-
+        self.map = Map()
 
     def updatePlayerInfoOnServer(self):
         batchTankUpdateMessageFromServer: batchTankUpdateMessage = pickle.loads(self.network.send(tankUpdateMessage(self.player.id, self.player.tank.x, self.player.tank.y, self.player.tank.direction_vector, self.player.team.color).getMessage()))
@@ -48,15 +48,16 @@ class Client:
         for bullet_creation_message in serverResponse.bullets_to_add:
             self.bulletObjects.append(bullet_creation_message.bullet)
 
-
-    def redrawWindow(self,background):
+    def redrawWindow(self):
         self.win.fill((0, 0, 0))
-        self.win.blit(background,(0,0))
+        #self.win.blit(background,(0,0))
+        self.map.draw(self.win)
         for playerInfo in self.serverPlayerInfo:
             tank = Tank(playerInfo[1], playerInfo[2], playerInfo[3], playerInfo[4])
             tank.draw(self.win)
         for bullet in self.bulletObjects:
             bullet.draw(self.win)
+
         pygame.display.update()
 
 
