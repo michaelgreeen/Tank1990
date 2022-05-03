@@ -75,7 +75,6 @@ def clientThread(server, connection: socket, playerNumber: int):
                     if to_delete:
                         server.bullet_objects_queue.remove(bullet_object_to_create)
             elif isinstance(data,mapUpdateMessage):
-                data.map = server.mapOutline
                 reply = data
                 connection.sendall(reply.getMessage())
             else:

@@ -60,7 +60,6 @@ class Client:
         for i in range(len(serverResponse.map)):
             for j in range(len(serverResponse.map[i])):
                 self.map.MapObjects[i][j] = serverResponse.map[i][j]
-        pass
 
     def redrawWindow(self):
         self.win.fill((0, 0, 0))
@@ -78,6 +77,7 @@ class Client:
 def main():
     client = Client()
     clock = pygame.time.Clock()
+    iter = 1
     while client.running:
         clock.tick(60)
         for event in pygame.event.get():
@@ -87,6 +87,7 @@ def main():
         client.player.tank.move()
         client.updatePlayerInfoOnServer()
         client.updateMapInfoOnServer()
+
         bullet = client.player.tank.shoot()
         if type(bullet) == Bullet:
             client.createBulletOnServer(bullet)
