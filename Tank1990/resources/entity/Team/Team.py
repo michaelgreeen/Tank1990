@@ -1,20 +1,16 @@
-from typing import List
-from Tank1990.resources.entity.Player.Player import Player
 class Team:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, color: tuple):
         self.name = name
-        self.players: List[Player] = []
+        self.color = color
+        self.players = []
 
-    def getPlayers(self):
-        return self.players
 
-    def addPlayer(self, player: Player):
+    def addPlayer(self, player):
         self.players.append(player)
 
     def clearPlayers(self):
         self.players.clear()
-    
-    def removePlayer(self, player: Player):
-        self.players.remove(player)
 
+    def removePlayer(self, player):
+        self.players.remove(player)

@@ -1,39 +1,22 @@
-import pygame
-from Tank1990.conf.Common import *
+import pickle
+
+
+from Tank1990.resources.entity.Tank.Tank import Tank
+from Tank1990.resources.entity.Team.Team import Team
 
 
 class Player():
-    def __init__(self, x, y, width, height, color):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.rect = (x,y,width,height)
-        self.vel = 10
-        if self.color == RED:
-            self.color_string = "RED"
-        else:
-            self.color_string = "GREEN"
-        
+    def __init__(self, id):
+        self.id = id
+        self.tank: Tank
+        self.team: Team
 
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, self.rect)
+    def assignTank(self, tank: Tank):
+        self.tank = tank
 
-    def move(self):
-        keys = pygame.key.get_pressed()
+    def assignToTeam(self, team: Team):
+        self.team = team
+        team.addPlayer(self)
 
-        if keys[pygame.K_LEFT] and (self.x - self.vel >= 0):
-            self.x -= self.vel
-        if keys[pygame.K_RIGHT] and (self.x + self.width + self.vel <= SCREEN_WIDTH):
-            self.x += self.vel
-        if keys[pygame.K_UP] and (self.y - self.vel >= 0):
-            self.y -= self.vel
-        if keys[pygame.K_DOWN] and (self.y + self.height + self.vel <= SCREEN_HEIGHT):
-            self.y += self.vel
-
-        self.update()
-
-    def update(self):
-        self.center = ((self.x +self.width)/2,(self.y + self.width)/2)
-        self.rect = (self.x, self.y, self.width, self.height)
+    def serializePlayer(self):
+        return pickle.dumps(self)
