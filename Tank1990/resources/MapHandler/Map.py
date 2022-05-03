@@ -4,9 +4,9 @@ from Tank1990.resources.configuration.Common import *
 class Map:
     def __init__(self):
         self.MapObjects = [[] for x in range(10)]
-        self.brick = pygame.transform.scale(pygame.image.load("..\\img\\brick.png"),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
-        self.road = pygame.transform.scale(pygame.image.load("..\\img\\road.png"),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
-        self.sand = pygame.transform.scale(pygame.image.load("..\\img\\sandbagBeige.png"),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
+        self.brick = pygame.transform.scale(pygame.image.load("..\\img\\brick.png").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
+        self.road = pygame.transform.scale(pygame.image.load("..\\img\\road.png").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
+        self.sand = pygame.transform.scale(pygame.image.load("..\\img\\sandbagBeige.png").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
 
     def draw(self, win):
         for i in range(MAP_ROWS):
