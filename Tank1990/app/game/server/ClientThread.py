@@ -8,9 +8,11 @@ from Tank1990.resources.configuration.Common import *
 from Tank1990.resources.entity.Tank.Tank import Tank
 from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage import bulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
+from Tank1990.resources.message_types.mapUpdateMessage.mapCreateMessage import MapCreateMessage
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
+from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
 
 def clientThread(server, connection: socket, playerNumber: int):
     
@@ -21,17 +23,17 @@ def clientThread(server, connection: socket, playerNumber: int):
     server.addPlayer(player)
     playerTank: Tank = Tank(spawnPoint[0], spawnPoint[1],  initialDirectionVector, player.team.color)
     player.assignTank(playerTank)
-    initPlayerMessage = playerCreateMessage(player)
+    initPlayerMessage = playerCreateMessage(player,server.mapOutline)
+
     print("SENDING: ", initPlayerMessage)
     connection.send(initPlayerMessage.getMessage())
+
     print("PLAYER LIST:\n")
     for player_object in server.teams.get("Red").players + server.teams.get("Green").players:
         print(str(player_object.tank.x) + " " + str(player_object.tank.y) + " " + player_object.team.name + "\n")
 
-
     while True:
         try:
-            
             data = pickle.loads(connection.recv(4096//1))
             if not data:
                 print("Disconnected")
@@ -72,8 +74,10 @@ def clientThread(server, connection: socket, playerNumber: int):
                             to_delete = False
                     if to_delete:
                         server.bullet_objects_queue.remove(bullet_object_to_create)
-
-
+            elif isinstance(data,mapUpdateMessage):
+                data.map = server.mapOutline
+                reply = data
+                connection.sendall(reply.getMessage())
             else:
                 pass
 

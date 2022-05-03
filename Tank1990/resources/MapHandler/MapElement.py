@@ -16,10 +16,6 @@ class MapElement(ABC):
         self.height = intervalVertical
         self.body_img_path = path
 
-    def draw(self, win):
-       pass
-       # win.blit(pygame.image.load("..\\img\\" + self.body_img_path), (self.x, self.y))
-
     @abstractmethod
     def collision(self):
         pass

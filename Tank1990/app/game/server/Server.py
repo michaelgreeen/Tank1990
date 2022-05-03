@@ -1,5 +1,7 @@
 import socket
 from threading import Thread
+
+from Tank1990.resources.MapHandler.Map import Map
 from Tank1990.resources.configuration.Common import *
 from Tank1990.resources.entity.Team.Team import Team
 from Tank1990.resources.entity.Player.Player import Player
@@ -17,6 +19,17 @@ class Server:
         self.teams = {"Green": Team("Green", GREEN), "Red": Team("Red", RED)}
         self.ids = {0, 1, 2, 3}
         self.bullet_objects_queue = []
+        self.mapOutline = [[0, 2, 2, 1, 2, 1, 2, 1, 2, 1],
+                            [0, 0, 2, 0, 0, 0, 0, 2, 2, 1],
+                            [0, 0, 2, 2, 0, 0, 2, 2, 2, 1],
+                            [0, 0, 2, 2, 0, 1, 2, 2, 2, 1],
+                            [1, 1, 1, 1, 1, 2, 2, 2, 2, 1],
+                            [1, 0, 2, 1, 1, 1, 2, 2, 2, 1],
+                            [2, 0, 0, 2, 0, 1, 2, 2, 2, 1],
+                            [2, 0, 1, 1, 1, 1, 1, 2, 2, 1],
+                            [2, 0, 1, 2, 0, 1, 1, 2, 2, 1],
+                            [2, 0, 1, 2, 0, 1, 1, 2, 2, 1],
+                            ]
 
     def addPlayer(self, player: Player):
         #For now we assume that each team will have 2 players

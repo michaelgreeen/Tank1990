@@ -13,7 +13,8 @@ from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest im
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
-from Tank1990.resources.message_types.mapMessage import mapUpdateMessage, mapCreateMessage
+#from Tank1990.resources.message_types.mapUpdateMessage import mapCreateMessage
+from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
 
 class Client:
     def __init__(self):
@@ -21,16 +22,20 @@ class Client:
         pygame.display.set_caption("Client")
         self.running = True
         self.network: Network = Network()
+        self.map = Map()
         createPlayerMessageObject: playerCreateMessage = pickle.loads(self.network.getInitPlayerObject())
+
+        self.map.MapObjects = createPlayerMessageObject.mapOutline
         self.player: Player = createPlayerMessageObject.player
+
         #List of players on the server
         self.serverPlayerInfo = []
         self.bulletObjects = []
-        self.map = Map()
+
 
     def updatePlayerInfoOnServer(self):
         batchTankUpdateMessageFromServer: batchTankUpdateMessage = pickle.loads(self.network.send(tankUpdateMessage(self.player.id, self.player.tank.x, self.player.tank.y, self.player.tank.direction_vector, self.player.team.color).getMessage()))
-        print(batchTankUpdateMessageFromServer)
+        #print(batchTankUpdateMessageFromServer)
         self.serverPlayerInfo.clear()
         for tankUpdateMessageFromServer in batchTankUpdateMessageFromServer.tankUpdateMessages:
             message: tankUpdateMessage = tankUpdateMessageFromServer
@@ -49,6 +54,12 @@ class Client:
             self.bulletObjects.append(bullet_creation_message.bullet)
 
     def updateMapInfoOnServer(self):
+        updateRequest = mapUpdateMessage(self.map.MapObjects)
+        serverResponse = self.network.send(updateRequest.getMessage())
+        serverResponse = pickle.loads(serverResponse)
+        for i in range(len(serverResponse.map)):
+            for j in range(len(serverResponse.map[i])):
+                self.map.MapObjects[i][j] = serverResponse.map[i][j]
         pass
 
     def redrawWindow(self):
@@ -67,7 +78,6 @@ class Client:
 def main():
     client = Client()
     clock = pygame.time.Clock()
-   # background = pygame.image.load("..\\img\\Dirt1.png")
     while client.running:
         clock.tick(60)
         for event in pygame.event.get():
@@ -76,6 +86,7 @@ def main():
                 pygame.quit()
         client.player.tank.move()
         client.updatePlayerInfoOnServer()
+        client.updateMapInfoOnServer()
         bullet = client.player.tank.shoot()
         if type(bullet) == Bullet:
             client.createBulletOnServer(bullet)
