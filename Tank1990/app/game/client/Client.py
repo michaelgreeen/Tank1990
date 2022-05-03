@@ -1,5 +1,6 @@
 import pygame
 
+from Tank1990.resources.MapHandler.Map import Map
 from Tank1990.resources.entity.Bullet.Bullet import Bullet
 from Tank1990.resources.entity.network.Network import Network
 from Tank1990.resources.entity.Player.Player import Player
@@ -12,8 +13,7 @@ from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest im
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
-
-
+from Tank1990.resources.message_types.mapMessage import mapUpdateMessage, mapCreateMessage
 
 class Client:
     def __init__(self):
@@ -48,9 +48,11 @@ class Client:
         for bullet_creation_message in serverResponse.bullets_to_add:
             self.bulletObjects.append(bullet_creation_message.bullet)
 
+    def updateMapInfoOnServer(self):
+        pass
+
     def redrawWindow(self):
         self.win.fill((0, 0, 0))
-        #self.win.blit(background,(0,0))
         self.map.draw(self.win)
         for playerInfo in self.serverPlayerInfo:
             tank = Tank(playerInfo[1], playerInfo[2], playerInfo[3], playerInfo[4])
@@ -65,7 +67,7 @@ class Client:
 def main():
     client = Client()
     clock = pygame.time.Clock()
-    background = pygame.image.load("..\\img\\Dirt1.png")
+   # background = pygame.image.load("..\\img\\Dirt1.png")
     while client.running:
         clock.tick(60)
         for event in pygame.event.get():
@@ -84,7 +86,7 @@ def main():
                 client.bulletObjects.remove(bullet)
 
 
-        client.redrawWindow(background)
+        client.redrawWindow()
 
 
 if __name__ == "__main__":
