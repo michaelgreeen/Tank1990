@@ -20,6 +20,10 @@ class Tank:
         self.shooting_cooldown = 0
         self.body_img_path = ""
         self.barrel_img_path = ""
+        self.left_move_possible = True
+        self.right_move_possible = True
+        self.down_move_possible = True
+        self.up_move_possible = True
         if color == RED:
             self.body_img_path = "tankRed_outline.png"
             self.barrel_img_path = "barrelRed_outline.png"

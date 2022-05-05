@@ -30,7 +30,7 @@ def clientThread(server, connection: socket):
     player_tank = Tank(spawnPoint[0], spawnPoint[1],  initialDirectionVector, player.team.color)
     player.assignTank(player_tank)
     server.player_slots[player_number] = player
-    initPlayerMessage = playerCreateMessage(player)
+    initPlayerMessage = playerCreateMessage(player, server.mapOutline)
 
     #print("SENDING: ", initPlayerMessage)
     connection.send(initPlayerMessage.getMessage())

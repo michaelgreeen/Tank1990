@@ -1,5 +1,6 @@
 import pygame
 
+from Tank1990.resources.MapHandler.Map import Map
 from Tank1990.resources.entity.Bullet.Bullet import Bullet
 from Tank1990.resources.entity.network.Network import Network
 from Tank1990.resources.entity.Player.Player import Player
@@ -23,10 +24,12 @@ class Client:
         #pygame.mixer.music.load("../sound/sabaton-ghost-division-official-lyric-video.mp3")
         #pygame.mixer.music.play(loops = -1)
         self.running = True
+        self.map = Map()
         self.network: Network = Network()
-        createPlayerMessageObject: playerCreateMessage = pickle.loads(self.network.getInitPlayerObject())
+        createPlayerMessageObject = pickle.loads(self.network.getInitPlayerObject())
         self.player: Player = createPlayerMessageObject.player
 
+        self.map.MapObjects = createPlayerMessageObject.mapOutline
         self.bulletObjects = []
         self.tankObjects = []
 
@@ -53,9 +56,9 @@ class Client:
         self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
 
 
-    def redrawWindow(self, background):
+    def redrawWindow(self):
         self.win.fill((0, 0, 0))
-        self.win.blit(background, (0, 0))
+        self.map.draw(self.win)
 
         for bullet in self.bulletObjects:
             bullet.draw(self.win)
@@ -71,7 +74,6 @@ class Client:
 def main():
     client = Client()
     clock = pygame.time.Clock()
-    background = pygame.image.load("..\\img\\Dirt1.png").convert()
     while client.running:
         clock.tick(60)
         for event in pygame.event.get():
@@ -81,7 +83,7 @@ def main():
         client.tankMoveCheck()
         client.shootCheck()
         client.updateGameObjects()
-        client.redrawWindow(background)
+        client.redrawWindow()
 
 
 if __name__ == "__main__":
