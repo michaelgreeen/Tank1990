@@ -12,59 +12,58 @@ from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest im
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
-
+from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
 
 
 class Client:
     def __init__(self):
         self.win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Client")
-        pygame.mixer.init()
-        pygame.mixer.music.load("../sound/sabaton-ghost-division-official-lyric-video.mp3")
-        pygame.mixer.music.play(loops = -1)
+        #pygame.mixer.init()
+        #pygame.mixer.music.load("../sound/sabaton-ghost-division-official-lyric-video.mp3")
+        #pygame.mixer.music.play(loops = -1)
         self.running = True
         self.network: Network = Network()
         createPlayerMessageObject: playerCreateMessage = pickle.loads(self.network.getInitPlayerObject())
         self.player: Player = createPlayerMessageObject.player
-        #List of players on the server
-        self.serverPlayerInfo = []
+
         self.bulletObjects = []
+        self.tankObjects = []
 
 
-    def updatePlayerInfoOnServer(self):
-        batchTankUpdateMessageFromServer: batchTankUpdateMessage = pickle.loads(self.network.send(tankUpdateMessage(self.player.id, self.player.tank.x, self.player.tank.y, self.player.tank.direction_vector, self.player.team.color).getMessage()))
-        print(batchTankUpdateMessageFromServer)
-        self.serverPlayerInfo.clear()
-        for tankUpdateMessageFromServer in batchTankUpdateMessageFromServer.tankUpdateMessages:
-            message: tankUpdateMessage = tankUpdateMessageFromServer
-            playerEntry = (message.player_id, message.new_x, message.new_y, message.new_direction_vector, message.team_color)
-            self.serverPlayerInfo.append(playerEntry)
 
-    def createBulletOnServer(self, bullet):
-        createBulletMessage = bulletCreateMessage(bullet)
-        self.network.send(createBulletMessage.getMessage())
+    def tankMoveCheck(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.network.send(tankUpdateMessage(LEFT_UNIT_VECTOR).getMessage())
+        if keys[pygame.K_RIGHT]:
+            self.network.send(tankUpdateMessage(RIGHT_UNIT_VECTOR).getMessage())
+        if keys[pygame.K_UP]:
+            self.network.send(tankUpdateMessage(UP_UNIT_VECTOR).getMessage())
+        if keys[pygame.K_DOWN]:
+            self.network.send(tankUpdateMessage(DOWN_UNIT_VECTOR).getMessage())
 
-    def updateBulletObjects(self):
-        updateRequest = bulletUpdateRequest()
-        serverResponse = self.network.send(updateRequest.getMessage())
-        serverResponse = pickle.loads(serverResponse)
-        for bullet_creation_message in serverResponse.bullets_to_add:
-            self.bulletObjects.append(bullet_creation_message.bullet)
+    def shootCheck(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            self.network.send(bulletCreateMessage().getMessage())
 
+    def updateGameObjects(self):
+        self.tankObjects = pickle.loads(self.network.send(tankUpdateRequest().getMessage())).tanks
+        self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
 
-            
-            
-    
 
     def redrawWindow(self, background):
         self.win.fill((0, 0, 0))
         self.win.blit(background, (0, 0))
+
         for bullet in self.bulletObjects:
             bullet.draw(self.win)
 
-        for playerInfo in self.serverPlayerInfo:
-            tank = Tank(playerInfo[1], playerInfo[2], playerInfo[3], playerInfo[4])
+
+        for tank in self.tankObjects:
             tank.draw(self.win)
+
         pygame.display.update()
 
 
@@ -72,25 +71,16 @@ class Client:
 def main():
     client = Client()
     clock = pygame.time.Clock()
-    background = pygame.image.load("..\\img\\Dirt1.png")
+    background = pygame.image.load("..\\img\\Dirt1.png").convert()
     while client.running:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 client.running = False
                 pygame.quit()
-        client.player.tank.move()
-        client.updatePlayerInfoOnServer()
-        bullet = client.player.tank.shoot()
-        if type(bullet) == Bullet:
-            client.createBulletOnServer(bullet)
-        client.updateBulletObjects()
-        for bullet in client.bulletObjects:
-            bullet.update()
-            if bullet.x > SCREEN_WIDTH or bullet.x < 0 or bullet.y < 0 or bullet.y > SCREEN_HEIGHT:
-                client.bulletObjects.remove(bullet)
-
-
+        client.tankMoveCheck()
+        client.shootCheck()
+        client.updateGameObjects()
         client.redrawWindow(background)
 
 
