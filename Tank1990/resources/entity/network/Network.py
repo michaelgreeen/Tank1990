@@ -15,9 +15,9 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            print("Connection succesfull")
+            #print("Connection succesfull")
             receive = self.client.recv(4096//1)
-            print("Received: ", receive)
+            #print("Received: ", receive)
             return receive
         except:
             print("Receive failed")
@@ -25,10 +25,10 @@ class Network:
 
     def send(self, data):
         try:
-            print("Sending: ", data)
+            #print("Sending: ", data)
             self.client.send(data)
             receive = self.client.recv(4096//1)
-            print("Received: ", receive)
+            #print("Received: ", receive)
             return receive
         except socket.error as e:
             print("Receive Failed")
