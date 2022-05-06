@@ -31,7 +31,7 @@ class Tank:
 
     def draw(self, win):
         body_img = pygame.image.load("..\\img\\" + self.body_img_path).convert()
-        barrel_img = pygame.image.load("..\\img\\" + self.barrel_img_path).convert()
+        barrel_img = pygame.image.load("..\\img\\" + self.barrel_img_path)
 
         if self.direction_vector == DOWN_UNIT_VECTOR:
             body_img = pygame.transform.rotate(body_img, 180)
@@ -51,8 +51,7 @@ class Tank:
         else:
              self.barrel_attachement_coord[0] += UP_BARREL_HORIZONTAL_OFFSET
              self.barrel_attachement_coord[1] += UP_BARREL_VERTICAL_OFFSET
-        body_img = pygame.transform.scale(body_img,(VEHICLE_WIDTH,VEHICLE_HEIGHT))
-        barrel_img = pygame.transform.scale(barrel_img,(BARREL_LENGTH,BARREL_CALIBER))
+
         win.blit(body_img, (self.x, self.y))
         win.blit(barrel_img, self.barrel_attachement_coord)
 
@@ -64,16 +63,16 @@ class Tank:
 
         for i in range(MAP_ROWS):
             for j in range(MAP_COLUMNS):
-                if conditionRight >= INTERVAL_HORIZONTAL*j+1\
-                    and conditionLeft <= INTERVAL_HORIZONTAL*j+1\
-                    and conditionDown >= INTERVAL_VERTICAL*i+1\
+                if conditionRight >= INTERVAL_HORIZONTAL*j+1 \
+                    and conditionLeft <= INTERVAL_HORIZONTAL*j+1 \
+                    and conditionDown >= INTERVAL_VERTICAL*i+1 \
                     and conditionUp <= INTERVAL_VERTICAL * i+1:
                     if mapOutline[i][j] == 0:
                         self.vel = VEHICLE_VELOCITY
                     elif mapOutline[i][j] == 2:
                         self.vel = VEHICLE_VELOCITY/2
                     elif mapOutline[i][j] == 4:
-                        self.vel = VEHICLE_VELOCITY*2
+                        self.vel = VEHICLE_VELOCITY*1.1
                     else:
                         self.x = prevX
                         self.y = prevY

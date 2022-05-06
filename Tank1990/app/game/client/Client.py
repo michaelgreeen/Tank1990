@@ -7,6 +7,7 @@ from Tank1990.resources.configuration.Common import *
 import pickle
 from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage import bulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
+from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
@@ -49,6 +50,7 @@ class Client:
     def updateGameObjects(self):
         self.tankObjects = pickle.loads(self.network.send(tankUpdateRequest().getMessage())).tanks
         self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
+        self.map = self.initializeMapOutline(pickle.loads(self.network.send(mapUpdateMessage().getMessage())).map_outline)
 
     def redrawWindow(self):
         self.win.fill((0, 0, 0))

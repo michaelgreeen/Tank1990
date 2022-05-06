@@ -8,6 +8,7 @@ from Tank1990.resources.configuration.Common import *
 from Tank1990.resources.entity.Tank.Tank import Tank
 from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage import bulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
+from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
@@ -73,7 +74,8 @@ def clientThread(server, connection: socket):
                     data.bullets.append(bullet)
                 reply = data
                 connection.sendall(reply.getMessage())
-            elif isinstance(data,mapUpdateMessage):
+            elif isinstance(data, mapUpdateMessage):
+                data.map_outline = server.mapOutline
                 reply = data
                 connection.sendall(reply.getMessage())
             else:

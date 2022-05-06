@@ -37,6 +37,12 @@ def updateBullets(server):
 
 def bulletCollisionCheck(server):
     for bullet in server.bullet_objects:
+        bullet_x_grid = int(bullet.x//INTERVAL_HORIZONTAL)
+        bullet_y_grid = int(bullet.y//INTERVAL_VERTICAL)
+        if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
+            server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
+            server.bullet_objects.remove(bullet)
+            pass
         if bullet.x > SCREEN_WIDTH or bullet.x < 0:
             server.bullet_objects.remove(bullet)
             pass
