@@ -20,6 +20,7 @@ class Tank:
         self.shooting_cooldown = 0
         self.body_img_path = ""
         self.barrel_img_path = ""
+        self.onSand = False
         if color == RED:
             self.body_img_path = "tankRed_outline.png"
             self.barrel_img_path = "barrelRed_outline.png"
@@ -30,7 +31,7 @@ class Tank:
 
     def draw(self, win):
         body_img = pygame.image.load("..\\img\\" + self.body_img_path).convert()
-        barrel_img = pygame.image.load("..\\img\\" + self.barrel_img_path)
+        barrel_img = pygame.image.load("..\\img\\" + self.barrel_img_path).convert()
 
         if self.direction_vector == DOWN_UNIT_VECTOR:
             body_img = pygame.transform.rotate(body_img, 180)
@@ -50,38 +51,55 @@ class Tank:
         else:
              self.barrel_attachement_coord[0] += UP_BARREL_HORIZONTAL_OFFSET
              self.barrel_attachement_coord[1] += UP_BARREL_VERTICAL_OFFSET
-
+        body_img = pygame.transform.scale(body_img,(VEHICLE_WIDTH,VEHICLE_HEIGHT))
+        barrel_img = pygame.transform.scale(barrel_img,(BARREL_LENGTH,BARREL_CALIBER))
         win.blit(body_img, (self.x, self.y))
         win.blit(barrel_img, self.barrel_attachement_coord)
 
-    def move(self, vector):
+    def checkMovingCollision(self, mapOutline,prevX,prevY):
+        conditionRight = float(self.x + self.width)
+        conditionLeft = float(self.x - self.vel - self.width)
+        conditionUp = float(self.y - self.vel - self.height)
+        conditionDown = float(self.y + self.height)
 
+        for i in range(MAP_ROWS):
+            for j in range(MAP_COLUMNS):
+                if conditionRight >= INTERVAL_HORIZONTAL*j+1\
+                    and conditionLeft <= INTERVAL_HORIZONTAL*j+1\
+                    and conditionDown >= INTERVAL_VERTICAL*i+1\
+                    and conditionUp <= INTERVAL_VERTICAL * i+1:
+                    if mapOutline[i][j] == 0:
+                        self.vel = VEHICLE_VELOCITY
+                    elif mapOutline[i][j] == 2:
+                        self.vel = VEHICLE_VELOCITY/2
+                    elif mapOutline[i][j] == 4:
+                        self.vel = VEHICLE_VELOCITY*2
+                    else:
+                        self.x = prevX
+                        self.y = prevY
+
+
+
+
+    def move(self, vector,mapOutline):
         if vector == LEFT_UNIT_VECTOR and (self.x - self.vel >= 0):
             self.x -= self.vel
             self.direction_vector = LEFT_UNIT_VECTOR
+            self.checkMovingCollision(mapOutline,self.x + self.vel,self.y)
         if vector == RIGHT_UNIT_VECTOR and (self.x + self.width + self.vel <= SCREEN_WIDTH):
             self.x += self.vel
             self.direction_vector = RIGHT_UNIT_VECTOR
+            self.checkMovingCollision(mapOutline,self.x - self.vel,self.y)
         if vector == UP_UNIT_VECTOR and (self.y - self.vel >= 0):
             self.y -= self.vel
             self.direction_vector = UP_UNIT_VECTOR
+            self.checkMovingCollision(mapOutline,self.x, self.y + self.vel)
         if vector == DOWN_UNIT_VECTOR and (self.y + self.height + self.vel <= SCREEN_HEIGHT):
             self.y += self.vel
             self.direction_vector = DOWN_UNIT_VECTOR
-        #keys = pygame.key.get_pressed()
-       # if keys[pygame.K_LEFT] and (self.x - self.vel >= 0):
-        #    self.x -= self.vel
-        #    self.direction_vector = LEFT_UNIT_VECTOR
-        #if keys[pygame.K_RIGHT] and (self.x + self.width + self.vel <= SCREEN_WIDTH):
-         #   self.x += self.vel
-          #  self.direction_vector = RIGHT_UNIT_VECTOR
-        #if keys[pygame.K_UP] and (self.y - self.vel >= 0):
-         #   self.y -= self.vel
-         #   self.direction_vector = UP_UNIT_VECTOR
-        #if keys[pygame.K_DOWN] and (self.y + self.height + self.vel <= SCREEN_HEIGHT):
-         #   self.y += self.vel
-         #   self.direction_vector = DOWN_UNIT_VECTOR
+            self.checkMovingCollision(mapOutline,self.x, self.y- self.vel)
         self.update()
+
 
     def update(self):
         if self.shooting_cooldown > 0:

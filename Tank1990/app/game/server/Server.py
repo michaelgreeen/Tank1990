@@ -32,6 +32,18 @@ class Server:
         #Id of shooting player
         self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": []}
 
+        self.mapOutline = [[0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 0, 0, 0, 0, 2, 2, 0],
+                           [0, 0, 2, 2, 0, 0, 3, 3, 2, 0],
+                           [0, 0, 2, 2, 0, 3, 2, 2, 2, 0],
+                           [1, 4, 4, 4, 0, 0, 4, 4, 4, 4],
+                           [1, 0, 2, 1, 1, 1, 3, 2, 2, 1],
+                           [2, 0, 0, 2, 0, 1, 3, 2, 2, 1],
+                           [2, 0, 1, 1, 1, 1, 1, 2, 0, 1],
+                           [0, 0, 1, 2, 0, 1, 1, 2, 0, 0],
+                           [0, 0, 1, 2, 0, 3, 1, 3, 0, 0]
+                           ]
+
     def addPlayer(self, player: Player):
         #For now we assume that each team will have 2 players
         #At first we check which team has the bigger number of players

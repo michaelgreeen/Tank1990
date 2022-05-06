@@ -1,7 +1,8 @@
 import pygame
 
 from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR, \
-    RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT
+    RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT, INTERVAL_HORIZONTAL, INTERVAL_VERTICAL, \
+    VEHICLE_VELOCITY, MAP_ROWS, MAP_COLUMNS
 
 
 def updateTanks(server):
@@ -9,7 +10,8 @@ def updateTanks(server):
     for player_id, direction_vector in server.message_queues.get("PLAYER_MOVE"):
         player_tank = server.player_slots.get(player_id).tank
         if player_tank is not None:
-            player_tank.move(direction_vector)
+            #if checkMovingCollision(player_tank,server.mapOutline):
+            player_tank.move(direction_vector,server.mapOutline)
     for player in (server.teams.get("Green").players + server.teams.get("Red").players):
         player_tank = player.tank
         if player_tank is not None:
@@ -17,7 +19,6 @@ def updateTanks(server):
 
     server.message_queues.get("PLAYER_MOVE").clear()
     server.message_queues_lock.get("PLAYER_MOVE_LOCK").release()
-
 
 def createBullets(server):
     server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
@@ -33,8 +34,6 @@ def createBullets(server):
 def updateBullets(server):
     for bullet in server.bullet_objects:
         bullet.update()
-
-
 
 def bulletCollisionCheck(server):
     for bullet in server.bullet_objects:
