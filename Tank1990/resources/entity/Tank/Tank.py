@@ -30,8 +30,11 @@ class Tank:
 
 
     def draw(self, win):
+
         body_img = pygame.image.load("..\\img\\" + self.body_img_path).convert()
+        body_img = pygame.transform.scale(body_img, (VEHICLE_WIDTH, VEHICLE_HEIGHT))
         barrel_img = pygame.image.load("..\\img\\" + self.barrel_img_path)
+        barrel_img = pygame.transform.scale(barrel_img, (BARREL_CALIBER, BARREL_LENGTH))
 
         if self.direction_vector == DOWN_UNIT_VECTOR:
             body_img = pygame.transform.rotate(body_img, 180)
@@ -55,7 +58,7 @@ class Tank:
         win.blit(body_img, (self.x, self.y))
         win.blit(barrel_img, self.barrel_attachement_coord)
 
-    def checkMovingCollision(self, mapOutline,prevX,prevY):
+    def checkMovingCollision(self, mapOutline, prevX, prevY):
         conditionRight = float(self.x + self.width)
         conditionLeft = float(self.x - self.vel - self.width)
         conditionUp = float(self.y - self.vel - self.height)
@@ -63,10 +66,10 @@ class Tank:
 
         for i in range(MAP_ROWS):
             for j in range(MAP_COLUMNS):
-                if conditionRight >= INTERVAL_HORIZONTAL*j+1 \
-                    and conditionLeft <= INTERVAL_HORIZONTAL*j+1 \
-                    and conditionDown >= INTERVAL_VERTICAL*i+1 \
-                    and conditionUp <= INTERVAL_VERTICAL * i+1:
+                if conditionRight > INTERVAL_HORIZONTAL*j+1 \
+                    and conditionLeft < INTERVAL_HORIZONTAL*j+1 \
+                    and conditionDown > INTERVAL_VERTICAL*i+1 \
+                    and conditionUp < INTERVAL_VERTICAL * i+1:
                     if mapOutline[i][j] == 0:
                         self.vel = VEHICLE_VELOCITY
                     elif mapOutline[i][j] == 2:
