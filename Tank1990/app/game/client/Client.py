@@ -70,7 +70,7 @@ def main():
     client = Client()
     clock = pygame.time.Clock()
     while client.running:
-        clock.tick(60)
+        clock.tick(120)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 client.running = False

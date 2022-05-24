@@ -1,5 +1,5 @@
 import pickle
-from socket import socket
+
 
 
 
@@ -15,22 +15,17 @@ from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
 
 
-def clientThread(server, connection: socket):
-    player_number = 0
-    for slot in server.player_slots:
-        if server.player_slots[slot] is None:
-            player_number = slot
-            break
-        else:
-            pass
+def clientThread(server, connection, player_number):
 
-    spawnPoint = CLIENT_STARTING_POSITIONS[player_number]
-    initialDirectionVector = CLIENT_STARTING_DIRECTION_VECTOR[player_number]
-    player = Player(player_number)
-    server.addPlayer(player)
-    player_tank = Tank(spawnPoint[0], spawnPoint[1],  initialDirectionVector, player.team.color)
-    player.assignTank(player_tank)
-    server.player_slots[player_number] = player
+    player = server.player_slots[player_number].player
+    server.player_slots[player_number].isBot = False
+    #spawnPoint = CLIENT_STARTING_POSITIONS[player_number]
+    #initialDirectionVector = CLIENT_STARTING_DIRECTION_VECTOR[player_number]
+    #player = Player(player_number)
+    #server.addPlayer(player)
+    #player_tank = Tank(spawnPoint[0], spawnPoint[1],  initialDirectionVector, player.team.color)
+    #player.assignTank(player_tank)
+    #server.player_slots[player_number] = player
     initPlayerMessage = playerCreateMessage(player,server.mapOutline)
 
     #print("SENDING: ", initPlayerMessage)

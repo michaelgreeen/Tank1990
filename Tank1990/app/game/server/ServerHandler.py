@@ -8,7 +8,7 @@ from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT,
 def updateTanks(server):
     server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
     for player_id, direction_vector in server.message_queues.get("PLAYER_MOVE"):
-        player_tank = server.player_slots.get(player_id).tank
+        player_tank = server.player_slots.get(player_id).player.tank
         if player_tank is not None:
             # if checkMovingCollision(player_tank,server.mapOutline):
             player_tank.move(direction_vector, server.mapOutline)
@@ -24,7 +24,7 @@ def updateTanks(server):
 def createBullets(server):
     server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
     for player_id in server.message_queues.get("BULLET_CREATE"):
-        player_tank = server.player_slots[player_id].tank
+        player_tank = server.player_slots[player_id].player.tank
         bullet = player_tank.shoot()
         if bullet is not None:
             server.bullet_objects.append(bullet)
@@ -79,7 +79,7 @@ def bulletCollisionCheck(server):
 def ServerHandlingThread(server):
     clock = pygame.time.Clock()
     while True:
-        clock.tick(60)
+        clock.tick(120)
         bulletCollisionCheck(server)
         updateTanks(server)
         createBullets(server)

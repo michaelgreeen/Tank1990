@@ -1,6 +1,7 @@
 import socket
 from threading import Thread, Lock
 
+from Tank1990.app.game.server.BotThread import botThread
 from Tank1990.app.game.server.ServerHandler import ServerHandlingThread
 from Tank1990.resources.configuration.Common import *
 from Tank1990.resources.entity.Team.Team import Team
@@ -25,6 +26,8 @@ class Server:
         self.player_slots = {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
 
         self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock()}
+
+        self.thread_list = [[Thread(target=botThread, args=(self,)), False] for i in range(PLAYER_COUNT)]
 
         #Player move messages format:
         #Player id, move direction
@@ -87,10 +90,23 @@ class Server:
     def runServer(self):
         server_handling_thread = Thread(target = ServerHandlingThread, args = (self,))
         server_handling_thread.start()
+        for bot_thread in self.thread_list:
+            bot_thread[0].start()
         while True:
             connection, address = self.socket.accept()
             print("Connected to: ", address)
-            thread = Thread(target = clientThread, args = (self, connection))
+            player_number = 0
+            for slot in self.player_slots:
+                if self.player_slots[slot].isBot:
+                    player_number = slot
+                    break
+                else:
+                    continue
+
+            thread = Thread(target=clientThread, args=(self, connection, player_number))
+            self.thread_list[player_number][0] = thread
+            self.thread_list[player_number][1] = True
+
             thread.start()
 
 
