@@ -1,9 +1,26 @@
 import pygame
 
+from Tank1990.resources.entity.Player.Player import Player
 from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR, \
     RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT, INTERVAL_HORIZONTAL, INTERVAL_VERTICAL, \
-    VEHICLE_VELOCITY, MAP_ROWS, MAP_COLUMNS
+    VEHICLE_VELOCITY, MAP_ROWS, MAP_COLUMNS, CLIENT_STARTING_DIRECTION_VECTOR, CLIENT_STARTING_POSITIONS, PLAYER_COUNT
+from Tank1990.resources.entity.Player.PlayerSlot import PlayerSlot
+from Tank1990.resources.entity.Tank.Tank import Tank
 
+
+def createBots(server):
+    for bot_number in range(PLAYER_COUNT):
+        bot_player = Player(bot_number)
+        spawnPoint = CLIENT_STARTING_POSITIONS[bot_number]
+        initialDirectionVector = CLIENT_STARTING_DIRECTION_VECTOR[bot_number]
+        server.addPlayer(bot_player)
+        player_tank = Tank(spawnPoint[0], spawnPoint[1], initialDirectionVector, bot_player.team.color)
+        bot_player.assignTank(player_tank)
+        server.player_slots[bot_number] = PlayerSlot(bot_player, True)
+
+
+def handleBots(server):
+    pass
 
 def updateTanks(server):
     server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
@@ -49,6 +66,7 @@ def bulletCollisionCheck(server):
             continue
         if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
             server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
+
             server.bullet_objects.remove(bullet)
             continue
 
@@ -77,9 +95,10 @@ def bulletCollisionCheck(server):
 
 
 def ServerHandlingThread(server):
+    createBots(server)
     clock = pygame.time.Clock()
     while True:
-        clock.tick(120)
+        clock.tick(60)
         bulletCollisionCheck(server)
         updateTanks(server)
         createBullets(server)

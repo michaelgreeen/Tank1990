@@ -10,6 +10,7 @@ from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage im
 from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
 from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
+from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
 from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
@@ -73,6 +74,12 @@ def clientThread(server, connection, player_number):
                 data.map_outline = server.mapOutline
                 reply = data
                 connection.sendall(reply.getMessage())
+            elif isinstance(data, RequestMapEvents):
+                server.message_queues_lock.get("MAP_EVENT_LOCK").acquire()
+                for map_event in server.message_queue.get("MAP_EVENT"):
+                    pass
+                server.message_queues_lock.get("MAP_EVENT_LOCK").release()
+
             else:
                 pass
 

@@ -1,7 +1,6 @@
 import socket
 from threading import Thread, Lock
 
-from Tank1990.app.game.server.BotThread import botThread
 from Tank1990.app.game.server.ServerHandler import ServerHandlingThread
 from Tank1990.resources.configuration.Common import *
 from Tank1990.resources.entity.Team.Team import Team
@@ -25,15 +24,15 @@ class Server:
         #Player slots with approporiate id's
         self.player_slots = {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
 
-        self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock()}
+        self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock(), "MAP_EVENT_LOCK": Lock()}
 
-        self.thread_list = [[Thread(target=botThread, args=(self,)), False] for i in range(PLAYER_COUNT)]
+
 
         #Player move messages format:
         #Player id, move direction
         #Bullet create message format
         #Id of shooting player
-        self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": []}
+        self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": [], "MAP_EVENT": []}
 
         self.mapOutline = [[0, 0, 0, 1, 2, 1, 2, 1, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
                            [0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
@@ -90,8 +89,7 @@ class Server:
     def runServer(self):
         server_handling_thread = Thread(target = ServerHandlingThread, args = (self,))
         server_handling_thread.start()
-        for bot_thread in self.thread_list:
-            bot_thread[0].start()
+
         while True:
             connection, address = self.socket.accept()
             print("Connected to: ", address)
@@ -104,8 +102,7 @@ class Server:
                     continue
 
             thread = Thread(target=clientThread, args=(self, connection, player_number))
-            self.thread_list[player_number][0] = thread
-            self.thread_list[player_number][1] = True
+            self.player_slots[player_number].isBot = False
 
             thread.start()
 
