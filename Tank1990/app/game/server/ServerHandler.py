@@ -1,5 +1,5 @@
 import pygame
-
+import random
 from Tank1990.resources.entity.Player.Player import Player
 from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR, \
     RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT, INTERVAL_HORIZONTAL, INTERVAL_VERTICAL, \
@@ -20,6 +20,16 @@ def createBots(server):
 
 
 def handleBots(server):
+    for bot_number in range(PLAYER_COUNT):
+        if server.player_slots[bot_number].isBot:
+            server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
+            server.message_queues.get("PLAYER_MOVE").append((bot_number, random.choice(CLIENT_STARTING_DIRECTION_VECTOR)))
+            server.message_queues_lock.get("PLAYER_MOVE_LOCK").release()
+            if random.randint(0, 100) < 50:
+                server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
+                server.message_queues.get("BULLET_CREATE").append(bot_number)
+                server.message_queues_lock.get("BULLET_CREATE_LOCK").release()
+
     pass
 
 def updateTanks(server):
@@ -99,6 +109,7 @@ def ServerHandlingThread(server):
     clock = pygame.time.Clock()
     while True:
         clock.tick(60)
+        handleBots(server)
         bulletCollisionCheck(server)
         updateTanks(server)
         createBullets(server)
