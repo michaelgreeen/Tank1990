@@ -79,7 +79,6 @@ def clientThread(server, connection, player_number):
                 for map_event in server.message_queue.get("MAP_EVENT"):
                     pass
                 server.message_queues_lock.get("MAP_EVENT_LOCK").release()
-
             else:
                 pass
 

@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from Tank1990.resources.entity.Player.Player import Player
 from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR, \
     RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT, INTERVAL_HORIZONTAL, INTERVAL_VERTICAL, \
@@ -25,7 +26,7 @@ def handleBots(server):
             server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
             server.message_queues.get("PLAYER_MOVE").append((bot_number, random.choice(CLIENT_STARTING_DIRECTION_VECTOR)))
             server.message_queues_lock.get("PLAYER_MOVE_LOCK").release()
-            if random.randint(0, 100) < 50:
+            if random.randint(0, 100) < 2 and server.player_slots[bot_number].player.tank is not None:
                 server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
                 server.message_queues.get("BULLET_CREATE").append(bot_number)
                 server.message_queues_lock.get("BULLET_CREATE_LOCK").release()
@@ -52,6 +53,8 @@ def createBullets(server):
     server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
     for player_id in server.message_queues.get("BULLET_CREATE"):
         player_tank = server.player_slots[player_id].player.tank
+        if player_tank is None:
+            continue
         bullet = player_tank.shoot()
         if bullet is not None:
             server.bullet_objects.append(bullet)
@@ -66,23 +69,23 @@ def updateBullets(server):
 
 def bulletCollisionCheck(server):
     for bullet in server.bullet_objects:
-        bullet_x_grid = int(bullet.x // INTERVAL_HORIZONTAL)
-        bullet_y_grid = int(bullet.y // INTERVAL_VERTICAL)
+        bullet_x_grid = math.floor(bullet.x / INTERVAL_HORIZONTAL)
+        bullet_y_grid = math.floor(bullet.y / INTERVAL_VERTICAL)
         if bullet.x > SCREEN_WIDTH or bullet.x < 0:
             server.bullet_objects.remove(bullet)
             continue
         if bullet.y > SCREEN_HEIGHT or bullet.y < 0:
             server.bullet_objects.remove(bullet)
             continue
-        if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
-            server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
-
-            server.bullet_objects.remove(bullet)
-            continue
+        if  not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
+            if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
+                server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
+                server.bullet_objects.remove(bullet)
+                continue
 
         for player in (server.teams.get("Green").players + server.teams.get("Red").players):
             tank = player.tank
-            if tank is not None:
+            if tank is not None and bullet is not None:
                 if bullet.color != player.team.color:
                     if tank.direction_vector == RIGHT_UNIT_VECTOR or tank.direction_vector == LEFT_UNIT_VECTOR:
                         left_tank_boundary = tank.center[0] - VEHICLE_WIDTH / 2
