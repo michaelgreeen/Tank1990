@@ -22,40 +22,39 @@ def createBots(server):
 
 
 def handleBots(server):
+    server.message_queues_lock.get("FOLLOW_EVENT_LOCK").acquire()
+    playerTankRequestTuple = server.message_queues.get("FOLLOW_EVENT")
+
     for bot_number in range(PLAYER_COUNT):
         if server.player_slots[bot_number].isBot:
-            botMove(bot_number, server)
+            botMove(bot_number, server,playerTankRequestTuple)
             if random.randint(0, 1000) < 2 and server.player_slots[bot_number].player.tank is not None:
                 botShoot(bot_number, server)
-
+    server.message_queues.get("FOLLOW_EVENT").clear()
+    server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()
     pass
 
 
-def botMove(bot_number, server):
-
-    playersTanks = [server.player_slots[x].player.tank for x in server.player_slots if server.player_slots[x].isBot is False]
+def botMove(bot_number, server,playerTankRequestTuple):
 
     shortestDistance = 1000000
     bot = server.player_slots[bot_number].player.tank if server.player_slots[bot_number].player.tank is not None else None
     shortestIndex = -1
 
-    condition = len(playersTanks) > 0 and bot is not None
-
-    if condition:
-        for player_tank in playersTanks:
-            if player_tank:
-                if bot.color == player_tank.color:
+    condition = playerTankRequestTuple and bot is not None
+    for tuple in playerTankRequestTuple:
+        if condition:
+            if tuple:
+                if bot.color == tuple[0].color and tuple[1] is True:
                     #check if distance is lower after movement in some of directions
-                    distances = [dist((bot.x + VEHICLE_VELOCITY,bot.y),player_tank.center),
-                        dist((bot.x - VEHICLE_VELOCITY,bot.y),player_tank.center),
-                        dist((bot.x,bot.y - VEHICLE_VELOCITY),player_tank.center),
-                        dist((bot.x,bot.y + VEHICLE_VELOCITY),player_tank.center)]
+                    distances = [dist((bot.x + VEHICLE_VELOCITY,bot.y),tuple[0].center),
+                            dist((bot.x - VEHICLE_VELOCITY,bot.y),tuple[0].center),
+                            dist((bot.x,bot.y - VEHICLE_VELOCITY),tuple[0].center),
+                            dist((bot.x,bot.y + VEHICLE_VELOCITY),tuple[0].center)]
                     min_index = distances.index(min(distances))
 
                     if distances[min_index] < shortestDistance:
                         shortestIndex = min_index
-                        shortestDistance = distances[min_index]
-    print(shortestIndex)
 
     if shortestIndex == 0:
         addBotMovementToQueue(bot_number, server, vector=RIGHT_UNIT_VECTOR)
@@ -124,7 +123,7 @@ def bulletCollisionCheck(server):
         if bullet.y > SCREEN_HEIGHT or bullet.y < 0:
             server.bullet_objects.remove(bullet)
             continue
-        if  not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
+        if not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
             if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
                 server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
                 server.bullet_objects.remove(bullet)

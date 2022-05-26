@@ -12,6 +12,7 @@ from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage im
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.createCrowdFollowMessage import createCrowdFollowMessage
 
 
 class Client:
@@ -44,6 +45,15 @@ class Client:
         if keys[pygame.K_DOWN]:
             self.network.send(tankUpdateMessage(DOWN_UNIT_VECTOR).getMessage())
 
+
+    def crowdControlCheck(self):
+        keys = pygame.key.get_pressed()
+        follow_request = False
+
+        if keys[pygame.K_f]:
+            follow_request =  not follow_request
+            self.network.send(createCrowdFollowMessage(self.player.tank,follow_request).getMessage())
+
     def shootCheck(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
@@ -52,6 +62,7 @@ class Client:
     def updateGameObjects(self):
         self.tankObjects = pickle.loads(self.network.send(tankUpdateRequest().getMessage())).tanks
         self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
+        self.player.tank = pickle.loads(self.network.send(createCrowdFollowMessage(self.player.tank,False).getMessage())).tank
 #        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
         self.map = self.initializeMapOutline(pickle.loads(self.network.send(mapUpdateMessage().getMessage())).map_outline)
 
@@ -81,6 +92,7 @@ def main():
         client.tankMoveCheck()
         client.shootCheck()
         client.updateGameObjects()
+        client.crowdControlCheck()
         client.redrawWindow()
 
 

@@ -1,17 +1,11 @@
 import pickle
 
-
-
-
-from Tank1990.resources.entity.Player.Player import Player
-from Tank1990.resources.configuration.Common import *
-from Tank1990.resources.entity.Tank.Tank import Tank
 from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage import bulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.createCrowdFollowMessage import createCrowdFollowMessage
 from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
-from Tank1990.resources.message_types.tankUpdateMessage.batchTankUpdateMessage import batchTankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
 from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
 
@@ -65,25 +59,33 @@ def clientThread(server, connection, player_number):
                         data.tanks.append(player.tank)
                 reply = data
                 connection.sendall(reply.getMessage())
+
             elif isinstance(data, bulletUpdateRequest):
                 for bullet in server.bullet_objects:
                     data.bullets.append(bullet)
                 reply = data
                 connection.sendall(reply.getMessage())
+
             elif isinstance(data, mapUpdateMessage):
                 data.map_outline = server.mapOutline
                 reply = data
                 connection.sendall(reply.getMessage())
+
             elif isinstance(data, RequestMapEvents):
                 server.message_queues_lock.get("MAP_EVENT_LOCK").acquire()
                 for map_event in server.message_queue.get("MAP_EVENT"):
                     pass
                 server.message_queues_lock.get("MAP_EVENT_LOCK").release()
+
+            elif isinstance(data,createCrowdFollowMessage):
+                server.message_queues_lock.get("FOLLOW_EVENT_LOCK").acquire()
+                server.message_queues.get("FOLLOW_EVENT").append((data.tank,data.followRequest))
+                server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()
+                data.tank = server.player_slots[player_number].player.tank
+                reply = data
+                connection.sendall(reply.getMessage())
             else:
                 pass
-
-            #print("Received: ", data)
-            #print("Sending : ", reply)
             
         except:
             break

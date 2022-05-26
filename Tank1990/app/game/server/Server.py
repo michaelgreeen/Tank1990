@@ -24,7 +24,8 @@ class Server:
         #Player slots with approporiate id's
         self.player_slots = {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
 
-        self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock(), "MAP_EVENT_LOCK": Lock()}
+        self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock(), "MAP_EVENT_LOCK": Lock(),
+                                    "FOLLOW_EVENT_LOCK": Lock()}
 
 
 
@@ -32,7 +33,7 @@ class Server:
         #Player id, move direction
         #Bullet create message format
         #Id of shooting player
-        self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": [], "MAP_EVENT": []}
+        self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": [], "MAP_EVENT": [], "FOLLOW_EVENT": []}
 
         self.mapOutline = [[0, 0, 0, 1, 2, 1, 2, 1, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
                            [0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
