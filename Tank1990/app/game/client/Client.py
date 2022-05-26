@@ -52,7 +52,7 @@ class Client:
     def updateGameObjects(self):
         self.tankObjects = pickle.loads(self.network.send(tankUpdateRequest().getMessage())).tanks
         self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
-        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
+#        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
         self.map = self.initializeMapOutline(pickle.loads(self.network.send(mapUpdateMessage().getMessage())).map_outline)
 
     def redrawWindow(self):

@@ -1,10 +1,11 @@
 import pygame
 import random
-import math
+from math import dist, floor
 from Tank1990.resources.entity.Player.Player import Player
 from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR, \
     RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT, INTERVAL_HORIZONTAL, INTERVAL_VERTICAL, \
-    VEHICLE_VELOCITY, MAP_ROWS, MAP_COLUMNS, CLIENT_STARTING_DIRECTION_VECTOR, CLIENT_STARTING_POSITIONS, PLAYER_COUNT
+    VEHICLE_VELOCITY, MAP_ROWS, MAP_COLUMNS, CLIENT_STARTING_DIRECTION_VECTOR, CLIENT_STARTING_POSITIONS, PLAYER_COUNT, \
+    MOVE_DIRECTION_VECTOR
 from Tank1990.resources.entity.Player.PlayerSlot import PlayerSlot
 from Tank1990.resources.entity.Tank.Tank import Tank
 
@@ -23,15 +24,72 @@ def createBots(server):
 def handleBots(server):
     for bot_number in range(PLAYER_COUNT):
         if server.player_slots[bot_number].isBot:
-            server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
-            server.message_queues.get("PLAYER_MOVE").append((bot_number, random.choice(CLIENT_STARTING_DIRECTION_VECTOR)))
-            server.message_queues_lock.get("PLAYER_MOVE_LOCK").release()
-            if random.randint(0, 100) < 2 and server.player_slots[bot_number].player.tank is not None:
-                server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
-                server.message_queues.get("BULLET_CREATE").append(bot_number)
-                server.message_queues_lock.get("BULLET_CREATE_LOCK").release()
+            botMove(bot_number, server)
+            if random.randint(0, 1000) < 2 and server.player_slots[bot_number].player.tank is not None:
+                botShoot(bot_number, server)
 
     pass
+
+
+def botMove(bot_number, server):
+    players = []
+    for playerNumber in server.player_slots:
+        if server.player_slots[playerNumber].isBot == False:
+            players.append(server.player_slots[playerNumber])
+
+    shortestDistance = 1000000
+    bot:PlayerSlot = server.player_slots[bot_number]
+    shortestIndex = -1
+    if players is not []:
+        for player in players:
+            if player is not None:
+                if bot.player.tank.color == player.player.tank.color:
+                    #check if distance is lower after movement in some of directions
+                    distances = [dist((bot.player.tank.x + VEHICLE_VELOCITY,bot.player.tank.y),player.player.tank.center),
+                     dist((bot.player.tank.x - VEHICLE_VELOCITY,bot.player.tank.y),player.player.tank.center),
+                     dist((bot.player.tank.x,bot.player.tank.y - VEHICLE_VELOCITY),player.player.tank.center),
+                     dist((bot.player.tank.x,bot.player.tank.y + VEHICLE_VELOCITY),player.player.tank.center)]
+                    min_index = distances.index(min(distances))
+
+                    if distances[min_index] < shortestDistance:
+                        shortestIndex = min_index
+                        shortestDistance = distances[min_index]
+
+
+
+    if shortestIndex == 0:
+        addBotMovementToQueue(bot_number, server, vector=RIGHT_UNIT_VECTOR)
+    elif shortestIndex == 1:
+        addBotMovementToQueue(bot_number, server, vector=LEFT_UNIT_VECTOR)
+    elif shortestIndex == 2:
+        addBotMovementToQueue(bot_number, server, vector=UP_UNIT_VECTOR)
+    elif shortestIndex == 3:
+        addBotMovementToQueue(bot_number, server, vector=DOWN_UNIT_VECTOR)
+    else:
+        addBotMovementToQueue(bot_number, server, vector=random.choice(MOVE_DIRECTION_VECTOR))
+
+
+
+
+
+def addBotMovementToQueue(bot_number, server, vector):
+    server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
+    server.message_queues.get("PLAYER_MOVE").append((bot_number, vector))
+    server.message_queues_lock.get("PLAYER_MOVE_LOCK").release()
+
+
+def botShoot(bot_number, server):
+    server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
+    server.message_queues.get("BULLET_CREATE").append(bot_number)
+    server.message_queues_lock.get("BULLET_CREATE_LOCK").release()
+
+
+def botMoveAlgorithm():
+
+
+
+    return random.choice(MOVE_DIRECTION_VECTOR)
+
 
 def updateTanks(server):
     server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
@@ -69,8 +127,8 @@ def updateBullets(server):
 
 def bulletCollisionCheck(server):
     for bullet in server.bullet_objects:
-        bullet_x_grid = math.floor(bullet.x / INTERVAL_HORIZONTAL)
-        bullet_y_grid = math.floor(bullet.y / INTERVAL_VERTICAL)
+        bullet_x_grid = floor(bullet.x / INTERVAL_HORIZONTAL)
+        bullet_y_grid = floor(bullet.y / INTERVAL_VERTICAL)
         if bullet.x > SCREEN_WIDTH or bullet.x < 0:
             server.bullet_objects.remove(bullet)
             continue

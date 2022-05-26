@@ -47,7 +47,7 @@ DOWN_UNIT_VECTOR = (0, 1)
 LEFT_UNIT_VECTOR = (-1, 0)
 RIGHT_UNIT_VECTOR = (1, 0)
 CLIENT_STARTING_DIRECTION_VECTOR = [(1, 0), (-1, 0), (1, 0), (-1, 0), (1, 0), (-1, 0), (1, 0), (-1, 0), (1, 0), (-1, 0)]
-
+MOVE_DIRECTION_VECTOR = [UP_UNIT_VECTOR, RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, DOWN_UNIT_VECTOR]
 
 def read_pos_team(string: str):
     string = string.split(",")
