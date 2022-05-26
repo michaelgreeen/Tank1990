@@ -32,30 +32,30 @@ def handleBots(server):
 
 
 def botMove(bot_number, server):
-    players = []
-    for playerNumber in server.player_slots:
-        if server.player_slots[playerNumber].isBot == False:
-            players.append(server.player_slots[playerNumber])
+
+    playersTanks = [server.player_slots[x].player.tank for x in server.player_slots if server.player_slots[x].isBot is False]
 
     shortestDistance = 1000000
-    bot:PlayerSlot = server.player_slots[bot_number]
+    bot = server.player_slots[bot_number].player.tank if server.player_slots[bot_number].player.tank is not None else None
     shortestIndex = -1
-    if players is not []:
-        for player in players:
-            if player is not None:
-                if bot.player.tank.color == player.player.tank.color:
+
+    condition = len(playersTanks) > 0 and bot is not None
+
+    if condition:
+        for player_tank in playersTanks:
+            if player_tank:
+                if bot.color == player_tank.color:
                     #check if distance is lower after movement in some of directions
-                    distances = [dist((bot.player.tank.x + VEHICLE_VELOCITY,bot.player.tank.y),player.player.tank.center),
-                     dist((bot.player.tank.x - VEHICLE_VELOCITY,bot.player.tank.y),player.player.tank.center),
-                     dist((bot.player.tank.x,bot.player.tank.y - VEHICLE_VELOCITY),player.player.tank.center),
-                     dist((bot.player.tank.x,bot.player.tank.y + VEHICLE_VELOCITY),player.player.tank.center)]
+                    distances = [dist((bot.x + VEHICLE_VELOCITY,bot.y),player_tank.center),
+                        dist((bot.x - VEHICLE_VELOCITY,bot.y),player_tank.center),
+                        dist((bot.x,bot.y - VEHICLE_VELOCITY),player_tank.center),
+                        dist((bot.x,bot.y + VEHICLE_VELOCITY),player_tank.center)]
                     min_index = distances.index(min(distances))
 
                     if distances[min_index] < shortestDistance:
                         shortestIndex = min_index
                         shortestDistance = distances[min_index]
-
-
+    print(shortestIndex)
 
     if shortestIndex == 0:
         addBotMovementToQueue(bot_number, server, vector=RIGHT_UNIT_VECTOR)
@@ -68,10 +68,6 @@ def botMove(bot_number, server):
     else:
         addBotMovementToQueue(bot_number, server, vector=random.choice(MOVE_DIRECTION_VECTOR))
 
-
-
-
-
 def addBotMovementToQueue(bot_number, server, vector):
     server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
     server.message_queues.get("PLAYER_MOVE").append((bot_number, vector))
@@ -82,13 +78,6 @@ def botShoot(bot_number, server):
     server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
     server.message_queues.get("BULLET_CREATE").append(bot_number)
     server.message_queues_lock.get("BULLET_CREATE_LOCK").release()
-
-
-def botMoveAlgorithm():
-
-
-
-    return random.choice(MOVE_DIRECTION_VECTOR)
 
 
 def updateTanks(server):
@@ -146,23 +135,28 @@ def bulletCollisionCheck(server):
             if tank is not None and bullet is not None:
                 if bullet.color != player.team.color:
                     if tank.direction_vector == RIGHT_UNIT_VECTOR or tank.direction_vector == LEFT_UNIT_VECTOR:
-                        left_tank_boundary = tank.center[0] - VEHICLE_WIDTH / 2
-                        right_tank_boundary = tank.center[0] + VEHICLE_WIDTH / 2
-                        upper_tank_boundary = tank.center[1] - VEHICLE_HEIGHT / 2
-                        down_tank_boundary = tank.center[1] + VEHICLE_HEIGHT / 2
+
+                        down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
                             player.tank = None
                             server.bullet_objects.remove(bullet)
                             break
+
                     if tank.direction_vector == UP_UNIT_VECTOR or tank.direction_vector == DOWN_UNIT_VECTOR:
-                        left_tank_boundary = tank.center[0] - VEHICLE_HEIGHT / 2
-                        right_tank_boundary = tank.center[0] + VEHICLE_HEIGHT / 2
-                        upper_tank_boundary = tank.center[1] - VEHICLE_WIDTH / 2
-                        down_tank_boundary = tank.center[1] + VEHICLE_WIDTH / 2
+
+                        down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
                             player.tank = None
                             server.bullet_objects.remove(bullet)
                             break
+
+
+def calculateTankBoundaries(tank):
+    left_tank_boundary = tank.center[0] - VEHICLE_WIDTH / 2
+    right_tank_boundary = tank.center[0] + VEHICLE_WIDTH / 2
+    upper_tank_boundary = tank.center[1] - VEHICLE_HEIGHT / 2
+    down_tank_boundary = tank.center[1] + VEHICLE_HEIGHT / 2
+    return down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary
 
 
 def ServerHandlingThread(server):
