@@ -29,7 +29,7 @@ def handleBots(server):
 
     for bot_number in range(PLAYER_COUNT):
         if server.player_slots[bot_number].isBot:
-            botMove(bot_number, server,playerTankRequestTuple)
+            botMove(bot_number, server, playerTankRequestTuple)
             if random.randint(0, 1000) < 2 and server.player_slots[bot_number].player.tank is not None:
                 botShoot(bot_number, server)
     server.message_queues.get("FOLLOW_EVENT").clear()
@@ -37,22 +37,23 @@ def handleBots(server):
     pass
 
 
-def botMove(bot_number, server,playerTankRequestTuple):
+def botMove(bot_number, server, playerTankRequestTuple):
 
     shortestDistance = 1000000
     bot = server.player_slots[bot_number].player.tank if server.player_slots[bot_number].player.tank is not None else None
     shortestIndex = -1
 
-    condition = playerTankRequestTuple and bot is not None
+    condition = playerTankRequestTuple is not None and bot is not None
     for tuple in playerTankRequestTuple:
+
         if condition:
             if tuple:
                 if bot.color == tuple[0].color and tuple[1] is True:
                     #check if distance is lower after movement in some of directions
-                    distances = [dist((bot.x + VEHICLE_VELOCITY,bot.y),tuple[0].center),
-                            dist((bot.x - VEHICLE_VELOCITY,bot.y),tuple[0].center),
-                            dist((bot.x,bot.y - VEHICLE_VELOCITY),tuple[0].center),
-                            dist((bot.x,bot.y + VEHICLE_VELOCITY),tuple[0].center)]
+                    distances = [dist((bot.x + VEHICLE_VELOCITY, bot.y), tuple[0].center),
+                            dist((bot.x - VEHICLE_VELOCITY, bot.y), tuple[0].center),
+                            dist((bot.x, bot.y - VEHICLE_VELOCITY), tuple[0].center),
+                            dist((bot.x, bot.y + VEHICLE_VELOCITY), tuple[0].center)]
                     min_index = distances.index(min(distances))
 
                     if distances[min_index] < shortestDistance:
@@ -128,9 +129,11 @@ def bulletCollisionCheck(server):
         if not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
             if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
                 server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
-                server.message_queues_lock.get("MAP_EVENT_LOCK").acquire()
-                server.message_queues.get("MAP_EVENT").append([ExplosionEffect(bullet.x, bullet.y), [server.player_slots[player_slot].isBot for player_slot in server.player_slots]])
-                server.message_queues_lock.get("MAP_EVENT_LOCK").release()
+                for player_id in server.player_slots:
+                    if not server.player_slots[player_id].isBot:
+                        server.player_map_events_locks[player_id].acquire()
+                        server.player_map_events[player_id].append(ExplosionEffect(bullet.x, bullet.y))
+                        server.player_map_events_locks[player_id].release()
                 server.bullet_objects.remove(bullet)
                 continue
 
@@ -139,18 +142,26 @@ def bulletCollisionCheck(server):
             if tank is not None and bullet is not None:
                 if bullet.color != player.team.color:
                     if tank.direction_vector == RIGHT_UNIT_VECTOR or tank.direction_vector == LEFT_UNIT_VECTOR:
-
                         down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
                             player.tank = None
+                            for player_id in server.player_slots:
+                                if not server.player_slots[player_id].isBot:
+                                    server.player_map_events_locks[player_id].acquire()
+                                    server.player_map_events[player_id].append(ExplosionEffect(bullet.x, bullet.y))
+                                    server.player_map_events_locks[player_id].release()
                             server.bullet_objects.remove(bullet)
                             break
 
-                    if tank.direction_vector == UP_UNIT_VECTOR or tank.direction_vector == DOWN_UNIT_VECTOR:
-
+                    elif tank.direction_vector == UP_UNIT_VECTOR or tank.direction_vector == DOWN_UNIT_VECTOR:
                         down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
                             player.tank = None
+                            for player_id in server.player_slots:
+                                if not server.player_slots[player_id].isBot:
+                                    server.player_map_events_locks[player_id].acquire()
+                                    server.player_map_events[player_id].append(ExplosionEffect(bullet.x, bullet.y))
+                                    server.player_map_events_locks[player_id].release()
                             server.bullet_objects.remove(bullet)
                             break
 
