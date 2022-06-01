@@ -3,7 +3,7 @@ import pickle
 from Tank1990.resources.entity.Player.Player import Player
 
 
-class playerCreateMessage:
+class PlayerCreateMessage:
     def __init__(self, player: Player, mapOutline):
         self.player = player
         self.mapOutline = mapOutline

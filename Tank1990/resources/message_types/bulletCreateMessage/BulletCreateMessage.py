@@ -1,7 +1,9 @@
 import pickle
-class bulletUpdateRequest():
+class BulletCreateMessage:
+
     def __init__(self):
-        self.bullets = []
+        pass
+
 
     def getMessage(self):
         return pickle.dumps(self)

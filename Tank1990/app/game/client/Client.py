@@ -5,14 +5,14 @@ from Tank1990.resources.entity.network.Network import Network
 from Tank1990.resources.entity.Player.Player import Player
 from Tank1990.resources.configuration.Common import *
 import pickle
-from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage import bulletCreateMessage
-from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
-from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
-from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
+from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
+from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
+from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
+from Tank1990.resources.message_types.playerCreateMessage.PlayerCreateMessage import PlayerCreateMessage
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
-from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
-from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
-from Tank1990.resources.message_types.crowdControlMessage.createCrowdFollowMessage import createCrowdFollowMessage
+from Tank1990.resources.message_types.tankUpdateMessage.TankUpdateMessage import TankUpdateMessage
+from Tank1990.resources.message_types.tankUpdateMessage.TankUpdateRequest import TankUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.CreateCrowdFollowMessage import CreateCrowdFollowMessage
 
 
 class Client:
@@ -21,7 +21,7 @@ class Client:
         pygame.display.set_caption("Client")
         self.running = True
         self.network: Network = Network()
-        createPlayerMessageObject: playerCreateMessage = pickle.loads(self.network.getInitPlayerObject())
+        createPlayerMessageObject: PlayerCreateMessage = pickle.loads(self.network.getInitPlayerObject())
         self.player: Player = createPlayerMessageObject.player
 
         self.bulletObjects = []
@@ -37,13 +37,13 @@ class Client:
     def tankMoveCheck(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            self.network.send(tankUpdateMessage(LEFT_UNIT_VECTOR).getMessage())
+            self.network.send(TankUpdateMessage(LEFT_UNIT_VECTOR).getMessage())
         elif keys[pygame.K_RIGHT]:
-            self.network.send(tankUpdateMessage(RIGHT_UNIT_VECTOR).getMessage())
+            self.network.send(TankUpdateMessage(RIGHT_UNIT_VECTOR).getMessage())
         elif keys[pygame.K_UP]:
-            self.network.send(tankUpdateMessage(UP_UNIT_VECTOR).getMessage())
+            self.network.send(TankUpdateMessage(UP_UNIT_VECTOR).getMessage())
         elif keys[pygame.K_DOWN]:
-            self.network.send(tankUpdateMessage(DOWN_UNIT_VECTOR).getMessage())
+            self.network.send(TankUpdateMessage(DOWN_UNIT_VECTOR).getMessage())
 
 
     def crowdControlCheck(self):
@@ -52,19 +52,19 @@ class Client:
 
         if keys[pygame.K_f]:
             follow_request =  not follow_request
-            self.network.send(createCrowdFollowMessage(self.player.tank,follow_request).getMessage())
+            self.network.send(CreateCrowdFollowMessage(self.player.tank, follow_request).getMessage())
 
     def shootCheck(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
-            self.network.send(bulletCreateMessage().getMessage())
+            self.network.send(BulletCreateMessage().getMessage())
 
     def updateGameObjects(self):
-        self.tankObjects = pickle.loads(self.network.send(tankUpdateRequest().getMessage())).tanks
-        self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
-        self.player.tank = pickle.loads(self.network.send(createCrowdFollowMessage(self.player.tank, False).getMessage())).tank
+        self.tankObjects = pickle.loads(self.network.send(TankUpdateRequest().getMessage())).tanks
+        self.bulletObjects = pickle.loads(self.network.send(BulletUpdateRequest().getMessage())).bullets
+        self.player.tank = pickle.loads(self.network.send(CreateCrowdFollowMessage(self.player.tank, False).getMessage())).tank
 ##        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
-        self.map = self.initializeMapOutline(pickle.loads(self.network.send(mapUpdateMessage().getMessage())).map_outline)
+        self.map = self.initializeMapOutline(pickle.loads(self.network.send(MapUpdateMessage().getMessage())).map_outline)
 
     def redrawWindow(self):
         self.win.fill((0, 0, 0))

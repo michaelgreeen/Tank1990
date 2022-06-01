@@ -1,7 +1,7 @@
 import pickle
 
 
-class tankUpdateRequest:
+class TankUpdateRequest:
     def __init__(self):
         self.tanks = []
 

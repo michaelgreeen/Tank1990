@@ -1,13 +1,13 @@
 import pickle
 
-from Tank1990.resources.message_types.bulletCreateMessage.bulletCreateMessage import bulletCreateMessage
-from Tank1990.resources.message_types.bulletCreateMessage.bulletUpdateRequest import bulletUpdateRequest
-from Tank1990.resources.message_types.crowdControlMessage.createCrowdFollowMessage import createCrowdFollowMessage
-from Tank1990.resources.message_types.mapUpdateMessage.mapUpdateMessage import mapUpdateMessage
-from Tank1990.resources.message_types.playerCreateMessage.playerCreateMessage import playerCreateMessage
+from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
+from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.CreateCrowdFollowMessage import CreateCrowdFollowMessage
+from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
+from Tank1990.resources.message_types.playerCreateMessage.PlayerCreateMessage import PlayerCreateMessage
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
-from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateMessage import tankUpdateMessage
-from Tank1990.resources.message_types.tankUpdateMessage.tankUpdateRequest import tankUpdateRequest
+from Tank1990.resources.message_types.tankUpdateMessage.TankUpdateMessage import TankUpdateMessage
+from Tank1990.resources.message_types.tankUpdateMessage.TankUpdateRequest import TankUpdateRequest
 
 
 def clientThread(server, connection, player_number):
@@ -21,7 +21,7 @@ def clientThread(server, connection, player_number):
     #player_tank = Tank(spawnPoint[0], spawnPoint[1],  initialDirectionVector, player.team.color)
     #player.assignTank(player_tank)
     #server.player_slots[player_number] = player
-    initPlayerMessage = playerCreateMessage(player,server.mapOutline)
+    initPlayerMessage = PlayerCreateMessage(player, server.mapOutline)
 
     #print("SENDING: ", initPlayerMessage)
     connection.send(initPlayerMessage.getMessage())
@@ -38,21 +38,21 @@ def clientThread(server, connection, player_number):
                 print("Disconnected")
                 break
 
-            elif isinstance(data, tankUpdateMessage):
+            elif isinstance(data, TankUpdateMessage):
                 server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
                 server.message_queues.get("PLAYER_MOVE").append((player_number, data.direction_vector))
                 server.message_queues_lock.get("PLAYER_MOVE_LOCK").release()
                 reply = data
                 connection.sendall(reply.getMessage())
 
-            elif isinstance(data, bulletCreateMessage):
+            elif isinstance(data, BulletCreateMessage):
                 server.message_queues_lock.get("BULLET_CREATE_LOCK").acquire()
                 server.message_queues.get("BULLET_CREATE").append(player_number)
                 server.message_queues_lock.get("BULLET_CREATE_LOCK").release()
                 reply = data
                 connection.sendall(reply.getMessage())
 
-            elif isinstance(data, tankUpdateRequest):
+            elif isinstance(data, TankUpdateRequest):
                 for player in server.teams.get("Red").players + server.teams.get("Green").players:
                     tank = player.tank
                     if tank is not None:
@@ -60,13 +60,13 @@ def clientThread(server, connection, player_number):
                 reply = data
                 connection.sendall(reply.getMessage())
 
-            elif isinstance(data, bulletUpdateRequest):
+            elif isinstance(data, BulletUpdateRequest):
                 for bullet in server.bullet_objects:
                     data.bullets.append(bullet)
                 reply = data
                 connection.sendall(reply.getMessage())
 
-            elif isinstance(data, mapUpdateMessage):
+            elif isinstance(data, MapUpdateMessage):
                 data.map_outline = server.mapOutline
                 reply = data
                 connection.sendall(reply.getMessage())
@@ -90,7 +90,7 @@ def clientThread(server, connection, player_number):
                 print(reply.getMessage())
                 connection.sendall(reply.getMessage())
 
-            elif isinstance(data, createCrowdFollowMessage):
+            elif isinstance(data, CreateCrowdFollowMessage):
                 server.message_queues_lock.get("FOLLOW_EVENT_LOCK").acquire()
                 server.message_queues.get("FOLLOW_EVENT").append((data.tank,data.followRequest))
                 server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()

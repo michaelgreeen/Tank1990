@@ -1,7 +1,7 @@
 import pickle
 
 
-class mapUpdateMessage:
+class MapUpdateMessage:
     def __init__(self):
         self.map_outline =[[]]
 

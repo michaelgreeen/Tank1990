@@ -1,7 +1,7 @@
 import pickle
 
 
-class createCrowdFollowMessage():
+class CreateCrowdFollowMessage():
     def __init__(self, tank, followRequest):
         self.tank = tank
         self.followRequest = followRequest
