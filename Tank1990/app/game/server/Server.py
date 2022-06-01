@@ -24,24 +24,37 @@ class Server:
         #Player slots with approporiate id's
         self.player_slots = {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
 
-        self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock()}
+        self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock(), "MAP_EVENT_LOCK": Lock(),
+                                    "FOLLOW_EVENT_LOCK": Lock()}
+
+
 
         #Player move messages format:
         #Player id, move direction
         #Bullet create message format
         #Id of shooting player
-        self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": []}
+        self.message_queues = {"PLAYER_MOVE": [], "BULLET_CREATE": [], "MAP_EVENT": [], "FOLLOW_EVENT": []}
 
-        self.mapOutline = [[0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
-                           [0, 0, 2, 0, 0, 0, 0, 2, 2, 0],
-                           [0, 0, 2, 2, 0, 0, 3, 3, 2, 0],
-                           [0, 0, 2, 2, 0, 3, 2, 2, 2, 0],
-                           [1, 4, 4, 4, 0, 0, 4, 4, 4, 4],
-                           [1, 0, 2, 1, 1, 1, 3, 2, 2, 1],
-                           [2, 0, 0, 2, 0, 1, 3, 2, 2, 1],
-                           [2, 0, 1, 1, 1, 1, 1, 2, 0, 1],
-                           [0, 0, 1, 2, 0, 1, 1, 2, 0, 0],
-                           [0, 0, 1, 2, 0, 3, 1, 3, 0, 0]
+        self.mapOutline = [[0, 0, 0, 1, 2, 1, 2, 1, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 2, 0, 0, 3, 3, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 2, 0, 3, 2, 2, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 4, 4, 4, 0, 0, 4, 4, 4, 4, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 1, 1, 1, 3, 2, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 0, 2, 0, 1, 3, 2, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 1, 1, 1, 1, 1, 2, 0, 1, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 1, 2, 0, 1, 1, 2, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 1, 2, 0, 3, 1, 3, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 0, 1, 2, 1, 2, 1, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 2, 0, 0, 3, 3, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 2, 0, 3, 2, 2, 2, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 4, 4, 4, 0, 0, 4, 4, 4, 4, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 2, 1, 1, 1, 3, 2, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 0, 2, 0, 1, 3, 2, 2, 1, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 1, 1, 1, 1, 1, 2, 0, 1, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 1, 2, 0, 1, 1, 2, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0],
+                           [0, 0, 1, 2, 0, 3, 1, 3, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2, 0]
                            ]
 
     def addPlayer(self, player: Player):
@@ -77,10 +90,21 @@ class Server:
     def runServer(self):
         server_handling_thread = Thread(target = ServerHandlingThread, args = (self,))
         server_handling_thread.start()
+
         while True:
             connection, address = self.socket.accept()
             print("Connected to: ", address)
-            thread = Thread(target = clientThread, args = (self, connection))
+            player_number = 0
+            for slot in self.player_slots:
+                if self.player_slots[slot].isBot:
+                    player_number = slot
+                    break
+                else:
+                    continue
+
+            thread = Thread(target=clientThread, args=(self, connection, player_number))
+            self.player_slots[player_number].isBot = False
+
             thread.start()
 
 
