@@ -63,7 +63,7 @@ class Client:
         self.tankObjects = pickle.loads(self.network.send(TankUpdateRequest().getMessage())).tanks
         self.bulletObjects = pickle.loads(self.network.send(BulletUpdateRequest().getMessage())).bullets
         self.player.tank = pickle.loads(self.network.send(CreateCrowdFollowMessage(self.player.tank, False).getMessage())).tank
-##        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
+        self.eventObjects.extend(pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list)
         self.map = self.initializeMapOutline(pickle.loads(self.network.send(MapUpdateMessage().getMessage())).map_outline)
 
     def redrawWindow(self):
@@ -77,7 +77,11 @@ class Client:
             tank.draw(self.win)
 
         for event in self.eventObjects:
-            event.draw(self.win)
+            event.update()
+            if event.stage_counter >= len(event.stage_img):
+                self.eventObjects.remove(event)
+            else:
+                event.draw(self.win)
 
 
         pygame.display.update()

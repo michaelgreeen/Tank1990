@@ -100,7 +100,7 @@ class Tank:
             self.y += self.vel
             self.direction_vector = DOWN_UNIT_VECTOR
             self.checkMovingCollision(mapOutline,self.x, self.y- self.vel)
-        self.update()
+
 
 
     def update(self):
