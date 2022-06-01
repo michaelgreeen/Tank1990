@@ -1,6 +1,7 @@
 import pygame
 import random
 from math import dist, floor
+import time
 
 from Tank1990.resources.entity.Effect.ExplosionEffect import ExplosionEffect
 from Tank1990.resources.entity.Player.Player import Player
@@ -31,44 +32,74 @@ def handleBots(server):
         if server.player_slots[bot_number].isBot:
             botMove(bot_number, server, playerTankRequestTuple)
             if random.randint(0, 1000) < 2 and server.player_slots[bot_number].player.tank is not None:
-                botShoot(bot_number, server)
+                scanForEnemy(bot_number,server)
     server.message_queues.get("FOLLOW_EVENT").clear()
     server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()
-    pass
+
+def scanForEnemy(selfBotNumber, server):
+    scanner_tank = server.player_slots[selfBotNumber].player.tank
+    for bot_number in range(PLAYER_COUNT):
+        enemy_tank = server.player_slots[bot_number].player.tank
+        if bot_number == selfBotNumber:
+            continue
+        if enemy_tank:
+            if enemy_tank.color is not scanner_tank.color:
+                C = scanner_tank.center
+                A = (enemy_tank.x, enemy_tank.y)
+                B = (enemy_tank.x + enemy_tank.width, enemy_tank.y + enemy_tank.height)
+                if dist(A,C) + dist(C,B) >= dist(A,B):
+                    botShoot(bot_number, server)
+                    #print(time.time())
+                    #print("Found potential shooting target")
+
+
+
 
 
 def botMove(bot_number, server, playerTankRequestTuple):
-
     shortestDistance = 1000000
-    bot = server.player_slots[bot_number].player.tank if server.player_slots[bot_number].player.tank is not None else None
-    shortestIndex = -1
+    shortest_index = -1
+    bot:Tank = server.player_slots[bot_number].player.tank \
+        if server.player_slots[bot_number].player.tank is not None else None
 
-    condition = playerTankRequestTuple is not None and bot is not None
+    condition = True if ((playerTankRequestTuple is not None) and (bot is not None)) else False
     for tuple in playerTankRequestTuple:
-
         if condition:
-            if tuple:
+            if tuple[0] is not None:
                 if bot.color == tuple[0].color and tuple[1] is True:
-                    #check if distance is lower after movement in some of directions
+                    # check if distance is lower after movement in some of directions
                     distances = [dist((bot.x + VEHICLE_VELOCITY, bot.y), tuple[0].center),
-                            dist((bot.x - VEHICLE_VELOCITY, bot.y), tuple[0].center),
-                            dist((bot.x, bot.y - VEHICLE_VELOCITY), tuple[0].center),
-                            dist((bot.x, bot.y + VEHICLE_VELOCITY), tuple[0].center)]
+                                 dist((bot.x - VEHICLE_VELOCITY, bot.y), tuple[0].center),
+                                 dist((bot.x, bot.y - VEHICLE_VELOCITY), tuple[0].center),
+                                 dist((bot.x, bot.y + VEHICLE_VELOCITY), tuple[0].center)]
                     min_index = distances.index(min(distances))
 
                     if distances[min_index] < shortestDistance:
-                        shortestIndex = min_index
+                        shortest_index = min_index
 
-    if shortestIndex == 0:
-        addBotMovementToQueue(bot_number, server, vector=RIGHT_UNIT_VECTOR)
-    elif shortestIndex == 1:
-        addBotMovementToQueue(bot_number, server, vector=LEFT_UNIT_VECTOR)
-    elif shortestIndex == 2:
-        addBotMovementToQueue(bot_number, server, vector=UP_UNIT_VECTOR)
-    elif shortestIndex == 3:
-        addBotMovementToQueue(bot_number, server, vector=DOWN_UNIT_VECTOR)
-    else:
-        addBotMovementToQueue(bot_number, server, vector=random.choice(MOVE_DIRECTION_VECTOR))
+    decideOnBotMovement(bot, bot_number, server, shortest_index)
+
+
+def decideOnBotMovement(bot, bot_number, server, shortest_index):
+    if bot is not None:
+        movement_timestamp = int(time.time())
+        if bot.botLastTimestamp != movement_timestamp:
+            tmpVector = random.choice(MOVE_DIRECTION_VECTOR)
+            while tmpVector is not bot.direction_vector:
+                bot.direction_vector = random.choice(MOVE_DIRECTION_VECTOR)
+            bot.botLastTimestamp = movement_timestamp
+
+        if shortest_index == 0:
+            addBotMovementToQueue(bot_number, server, vector=RIGHT_UNIT_VECTOR)
+        elif shortest_index == 1:
+            addBotMovementToQueue(bot_number, server, vector=LEFT_UNIT_VECTOR)
+        elif shortest_index == 2:
+            addBotMovementToQueue(bot_number, server, vector=UP_UNIT_VECTOR)
+        elif shortest_index == 3:
+            addBotMovementToQueue(bot_number, server, vector=DOWN_UNIT_VECTOR)
+        else:
+            addBotMovementToQueue(bot_number, server, vector=bot.direction_vector)
+
 
 def addBotMovementToQueue(bot_number, server, vector):
     server.message_queues_lock.get("PLAYER_MOVE_LOCK").acquire()
@@ -127,7 +158,8 @@ def bulletCollisionCheck(server):
             server.bullet_objects.remove(bullet)
             continue
         if not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
-            if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
+            if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][
+                bullet_x_grid] == 3:
                 server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
                 for player_id in server.player_slots:
                     if not server.player_slots[player_id].isBot:
@@ -142,7 +174,8 @@ def bulletCollisionCheck(server):
             if tank is not None and bullet is not None:
                 if bullet.color != player.team.color:
                     if tank.direction_vector == RIGHT_UNIT_VECTOR or tank.direction_vector == LEFT_UNIT_VECTOR:
-                        down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(tank)
+                        down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(
+                            tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
                             player.tank = None
                             for player_id in server.player_slots:
@@ -154,7 +187,8 @@ def bulletCollisionCheck(server):
                             break
 
                     elif tank.direction_vector == UP_UNIT_VECTOR or tank.direction_vector == DOWN_UNIT_VECTOR:
-                        down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(tank)
+                        down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(
+                            tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
                             player.tank = None
                             for player_id in server.player_slots:
