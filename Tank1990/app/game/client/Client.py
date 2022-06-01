@@ -38,11 +38,11 @@ class Client:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             self.network.send(tankUpdateMessage(LEFT_UNIT_VECTOR).getMessage())
-        if keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT]:
             self.network.send(tankUpdateMessage(RIGHT_UNIT_VECTOR).getMessage())
-        if keys[pygame.K_UP]:
+        elif keys[pygame.K_UP]:
             self.network.send(tankUpdateMessage(UP_UNIT_VECTOR).getMessage())
-        if keys[pygame.K_DOWN]:
+        elif keys[pygame.K_DOWN]:
             self.network.send(tankUpdateMessage(DOWN_UNIT_VECTOR).getMessage())
 
 
@@ -62,8 +62,8 @@ class Client:
     def updateGameObjects(self):
         self.tankObjects = pickle.loads(self.network.send(tankUpdateRequest().getMessage())).tanks
         self.bulletObjects = pickle.loads(self.network.send(bulletUpdateRequest().getMessage())).bullets
-        self.player.tank = pickle.loads(self.network.send(createCrowdFollowMessage(self.player.tank,False).getMessage())).tank
-#        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
+        self.player.tank = pickle.loads(self.network.send(createCrowdFollowMessage(self.player.tank, False).getMessage())).tank
+##        self.eventObjects = pickle.loads(self.network.send(RequestMapEvents().getMessage())).map_event_list
         self.map = self.initializeMapOutline(pickle.loads(self.network.send(mapUpdateMessage().getMessage())).map_outline)
 
     def redrawWindow(self):
@@ -75,6 +75,10 @@ class Client:
 
         for tank in self.tankObjects:
             tank.draw(self.win)
+
+        for event in self.eventObjects:
+            event.draw(self.win)
+
 
         pygame.display.update()
 

@@ -1,6 +1,8 @@
 import pygame
 import random
 from math import dist, floor
+
+from Tank1990.resources.entity.Effect.ExplosionEffect import ExplosionEffect
 from Tank1990.resources.entity.Player.Player import Player
 from Tank1990.resources.configuration.Common import SCREEN_WIDTH, SCREEN_HEIGHT, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR, \
     RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR, VEHICLE_WIDTH, VEHICLE_HEIGHT, INTERVAL_HORIZONTAL, INTERVAL_VERTICAL, \
@@ -126,6 +128,9 @@ def bulletCollisionCheck(server):
         if not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
             if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
                 server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
+                server.message_queues_lock.get("MAP_EVENT_LOCK").acquire()
+                server.message_queues.get("MAP_EVENT").append([ExplosionEffect(bullet.x, bullet.y), [server.player_slots[player_slot].isBot for player_slot in server.player_slots]])
+                server.message_queues_lock.get("MAP_EVENT_LOCK").release()
                 server.bullet_objects.remove(bullet)
                 continue
 

@@ -73,11 +73,24 @@ def clientThread(server, connection, player_number):
 
             elif isinstance(data, RequestMapEvents):
                 server.message_queues_lock.get("MAP_EVENT_LOCK").acquire()
-                for map_event in server.message_queue.get("MAP_EVENT"):
-                    pass
+
+                for map_event in server.message_queues.get("MAP_EVENT"):
+                    if not map_event[1][player_number]:
+                        data.map_event_list.append(map_event[0])
+                    map_event[1][player_number] = True
+                    toDelete = False
+                    for sentToPlayer in map_event[1]:
+                        toDelete = toDelete and sentToPlayer
+                    if toDelete:
+                        server.message_queue.get("MAP_EVENT").remove(map_event)
+
                 server.message_queues_lock.get("MAP_EVENT_LOCK").release()
 
-            elif isinstance(data,createCrowdFollowMessage):
+                reply = data
+                print(reply.getMessage())
+                connection.sendall(reply.getMessage())
+
+            elif isinstance(data, createCrowdFollowMessage):
                 server.message_queues_lock.get("FOLLOW_EVENT_LOCK").acquire()
                 server.message_queues.get("FOLLOW_EVENT").append((data.tank,data.followRequest))
                 server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()

@@ -10,9 +10,9 @@ class ExplosionEffect:
         self.y = y
         self.stage_img = []
         for i in range(5):
-            self.stage_img += pygame.transform.scale(pygame.image.load("..\\img\\" + "Smoke" + i + ".png"),
-                                                     (SMOKE_WIDTH, SMOKE_HEIGHT))
-            
+            self.stage_img.append(pygame.transform.scale(pygame.image.load("..\\img\\" + "Smoke" + str(i) + ".png"),
+                                                     (SMOKE_WIDTH, SMOKE_HEIGHT)))
+
     def update(self):
         self.stage_counter += 1
 
