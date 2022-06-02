@@ -10,6 +10,7 @@ import pickle
 from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
 from Tank1990.resources.message_types.crowdControlMessage.RequestOrderIssuance import RequestOrderIssuance
+from Tank1990.resources.message_types.crowdControlMessage.TargetGridMessage import TargetGridMessage
 from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.PlayerCreateMessage import PlayerCreateMessage
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
@@ -31,7 +32,8 @@ class Client:
         self.tankObjects = []
         self.eventObjects = []
         self.map = self.initializeMapOutline(createPlayerMessageObject.mapOutline)
-        self.clicked_grid = (None, None)
+        self.clicked_grid = None
+        self.target_grid = None
         self.grid_outline_image = pygame.image.load("../img/green_square_outline.png") if self.player.team.color == GREEN \
             else pygame.image.load("../img/orange_square_outline.png")
         self.grid_outline_image = pygame.transform.scale(self.grid_outline_image, (INTERVAL_VERTICAL, INTERVAL_HORIZONTAL))
@@ -43,6 +45,8 @@ class Client:
             content = "YOU ARE ISSUING ORDERS"
         else:
             content = "YOU ARE NOT ISSUING ORDERS"
+            if self.order_issuing_player_id is not None:
+                content += " - PLAYER " + str(self.order_issuing_player_id) + " IS."
 
 
         text = font.render(content, True, BRIGHT_YELLOW)
@@ -69,25 +73,34 @@ class Client:
 
 
     def issueOrderCheck(self):
+        order_check_message = RequestOrderIssuance(None)
+        for event in pygame.event.get():
+            if self.issuing_orders:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    pos = pygame.mouse.get_pos()
+                    X_grid = int(pos[0]//INTERVAL_HORIZONTAL)
+                    Y_grid = int(pos[1]//INTERVAL_VERTICAL)
+                    self.clicked_grid = (X_grid * INTERVAL_HORIZONTAL, Y_grid * INTERVAL_VERTICAL)
+            if event.type == pygame.KEYUP and event.key == pygame.K_c:
+                self.clicked_grid = None
 
-            for event in pygame.event.get():
-                if self.issuing_orders:
-                    if event.type == pygame.MOUSEBUTTONUP:
-                        pos = pygame.mouse.get_pos()
-                        X_grid = int(pos[0]//INTERVAL_HORIZONTAL)
-                        Y_grid = int(pos[1]//INTERVAL_VERTICAL)
-                        self.clicked_grid = (X_grid * INTERVAL_HORIZONTAL, Y_grid * INTERVAL_VERTICAL)
-                if event.type == pygame.KEYUP and event.key == pygame.K_o:
-                    order_issuing_player_id = pickle.loads(self.network.send(RequestOrderIssuance().getMessage())).issuing_player_id
-                    if order_issuing_player_id == self.player.id:
-                        self.issuing_orders = True
-                    else:
-                        self.issuing_orders = False
+            if event.type == pygame.KEYUP and event.key == pygame.K_o:
+                order_check_message.issuing_player_id = self.player.id
+        self.order_issuing_player_id = pickle.loads(self.network.send(order_check_message.getMessage())).issuing_player_id
+        if self.order_issuing_player_id == self.player.id:
+            self.issuing_orders = True
+        else:
+            self.issuing_orders = False
+            self.clicked_grid = None
 
 
-
-
-
+    def provideTeamGrid(self):
+        if self.issuing_orders:
+            selected_grid = self.clicked_grid
+        else:
+            selected_grid = None
+        msg = self.network.send(TargetGridMessage(selected_grid).getMessage())
+        self.target_grid = pickle.loads(msg).target_grid
 
 
 
@@ -118,8 +131,8 @@ class Client:
         self.map.draw(self.win)
 
 
-        if self.clicked_grid != (None, None):
-            self.win.blit(self.grid_outline_image, self.clicked_grid)
+        if self.target_grid is not None:
+            self.win.blit(self.grid_outline_image, self.target_grid)
 
 
         for bullet in self.bulletObjects:
@@ -159,7 +172,7 @@ def main():
         client.tankMoveCheck()
         client.shootCheck()
         client.updateGameObjects()
-
+        client.provideTeamGrid()
         client.crowdControlCheck()
         client.issueOrderCheck()
         client.redrawWindow()
