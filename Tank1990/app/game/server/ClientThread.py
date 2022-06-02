@@ -67,7 +67,6 @@ def clientThread(server, connection, player_number):
                 server.player_map_events[player_number].clear()
                 server.player_map_events_locks[player_number].release()
                 reply = data
-                print(reply.getMessage())
                 connection.sendall(reply.getMessage())
 
             elif isinstance(data, CreateCrowdFollowMessage):
@@ -83,12 +82,5 @@ def clientThread(server, connection, player_number):
         except:
             break
 
-
-    #print("REMOVING: " + str(player.tank.x) + "," + str(player.tank.y) + "," + player.team.name + "\n")
     server.player_slots[player_number].isBot = True
-
-    #print("Lost connection")
-    #print("CURRENT PLAYER LIST: \n")
-    #for player_object in server.teams.get("Red").players + server.teams.get("Green").players:
-    #    print(str(player_object.tank.x) + " " + str(player_object.tank.y) + " " + player_object.team.name + "\n")
     connection.close()

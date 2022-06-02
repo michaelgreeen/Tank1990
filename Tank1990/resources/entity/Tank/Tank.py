@@ -1,7 +1,7 @@
 import pickle
+import time
 
 import pygame
-
 from Tank1990.resources.configuration.Common import *
 from Tank1990.resources.entity.Bullet.Bullet import Bullet
 
@@ -13,6 +13,7 @@ class Tank:
         self.width: int = VEHICLE_WIDTH
         self.height: int = VEHICLE_HEIGHT
         self.vel: int = VEHICLE_VELOCITY
+        self.botLastTimestamp = int(time.time())
         self.color = color
         self.direction_vector = direction_vector
         self.center = (self.x + self.width / 2, self.y + self.height / 2)
@@ -20,7 +21,7 @@ class Tank:
         self.shooting_cooldown = 0
         self.body_img_path = ""
         self.barrel_img_path = ""
-        self.onSand = False
+        #self.DEBUG = True if self.x == 0 and self.y == 0 else False
         if color == RED:
             self.body_img_path = "tankRed_outline.png"
             self.barrel_img_path = "barrelRed_outline.png"
@@ -58,7 +59,16 @@ class Tank:
         win.blit(body_img, (self.x, self.y))
         win.blit(barrel_img, self.barrel_attachement_coord)
 
+    def calculateTankBoundaries(self):
+        left_tank_boundary = self.center[0] - VEHICLE_WIDTH / 2
+        right_tank_boundary = self.center[0] + VEHICLE_WIDTH / 2
+        upper_tank_boundary = self.center[1] - VEHICLE_HEIGHT / 2
+        down_tank_boundary = self.center[1] + VEHICLE_HEIGHT / 2
+        return down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary
+
     def checkMovingCollision(self, mapOutline, prevX, prevY):
+        #conditionDown,conditionLeft,conditionRight,conditionUp = self.calculateTankBoundaries()
+
         conditionRight = float(self.x + self.width)
         conditionLeft = float(self.x - self.vel - self.width)
         conditionUp = float(self.y - self.vel - self.height)
@@ -67,9 +77,9 @@ class Tank:
         for i in range(MAP_ROWS):
             for j in range(MAP_COLUMNS):
                 if conditionRight > INTERVAL_HORIZONTAL*j+1 \
-                    and conditionLeft < INTERVAL_HORIZONTAL*j+1 \
-                    and conditionDown > INTERVAL_VERTICAL*i+1 \
-                    and conditionUp < INTERVAL_VERTICAL * i+1:
+                        and conditionLeft < INTERVAL_HORIZONTAL*j+1 \
+                        and conditionDown > INTERVAL_VERTICAL*i+1 \
+                        and conditionUp < INTERVAL_VERTICAL * i+1:
                     if mapOutline[i][j] == 0:
                         self.vel = VEHICLE_VELOCITY
                     elif mapOutline[i][j] == 2:
@@ -79,8 +89,6 @@ class Tank:
                     else:
                         self.x = prevX
                         self.y = prevY
-
-
 
 
     def move(self, vector,mapOutline):
@@ -99,7 +107,7 @@ class Tank:
         if vector == DOWN_UNIT_VECTOR and (self.y + self.height + self.vel <= SCREEN_HEIGHT):
             self.y += self.vel
             self.direction_vector = DOWN_UNIT_VECTOR
-            self.checkMovingCollision(mapOutline,self.x, self.y- self.vel)
+            self.checkMovingCollision(mapOutline,self.x, self.y - self.vel)
 
 
 
