@@ -2,6 +2,7 @@ import pickle
 
 from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.RequestOrderIssuance import RequestOrderIssuance
 from Tank1990.resources.message_types.crowdControlMessage.CreateCrowdFollowMessage import CreateCrowdFollowMessage
 from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.PlayerCreateMessage import PlayerCreateMessage
@@ -76,6 +77,19 @@ def clientThread(server, connection, player_number):
                 data.tank = server.player_slots[player_number].player.tank
                 reply = data
                 connection.sendall(reply.getMessage())
+
+            elif isinstance(data, RequestOrderIssuance):
+                if player.team.order_issuing_player == None:
+                    player.team.order_issuing_player = player
+                    data.issuing_player_id = player_number
+                elif player.team.order_issuing_player == player:
+                    player.team.order_issuing_player = None
+                    data.issuing_player_id = None
+                else:
+                    data.issuing_player_id = player.team.order_issuing_player.id
+                reply = data
+                connection.sendall(reply.getMessage())
+
             else:
                 pass
             

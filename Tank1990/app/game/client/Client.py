@@ -9,6 +9,7 @@ from Tank1990.resources.configuration.Common import *
 import pickle
 from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.RequestOrderIssuance import RequestOrderIssuance
 from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.PlayerCreateMessage import PlayerCreateMessage
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
@@ -37,11 +38,17 @@ class Client:
 
     def displayCommunicates(self):
         font = pygame.font.Font('freesansbold.ttf', 32)
+        content = ""
         if self.issuing_orders:
-            text = font.render('YOU ARE NOW ISSUING ORDERS', True, BRIGHT_YELLOW)
-            textRect = text.get_rect()
-            textRect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT - 32)
-            self.win.blit(text, textRect)
+            content = "YOU ARE ISSUING ORDERS"
+        else:
+            content = "YOU ARE NOT ISSUING ORDERS"
+
+
+        text = font.render(content, True, BRIGHT_YELLOW)
+        textRect = text.get_rect()
+        textRect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT - 32)
+        self.win.blit(text, textRect)
 
     def initializeMapOutline(self, mapOutline):
         map = Map()
@@ -71,7 +78,12 @@ class Client:
                         Y_grid = int(pos[1]//INTERVAL_VERTICAL)
                         self.clicked_grid = (X_grid * INTERVAL_HORIZONTAL, Y_grid * INTERVAL_VERTICAL)
                 if event.type == pygame.KEYUP and event.key == pygame.K_o:
-                    self.issuing_orders = not self.issuing_orders
+                    order_issuing_player_id = pickle.loads(self.network.send(RequestOrderIssuance().getMessage())).issuing_player_id
+                    if order_issuing_player_id == self.player.id:
+                        self.issuing_orders = True
+                    else:
+                        self.issuing_orders = False
+
 
 
 
