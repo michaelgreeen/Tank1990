@@ -177,7 +177,7 @@ def bulletCollisionCheck(server):
                         down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(
                             tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
-                            player.tank = None
+                            player.respawnTank()
                             for player_id in server.player_slots:
                                 if not server.player_slots[player_id].isBot:
                                     server.player_map_events_locks[player_id].acquire()
@@ -190,7 +190,7 @@ def bulletCollisionCheck(server):
                         down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary = calculateTankBoundaries(
                             tank)
                         if left_tank_boundary < bullet.x < right_tank_boundary and upper_tank_boundary < bullet.y < down_tank_boundary:
-                            player.tank = None
+                            player.respawnTank()
                             for player_id in server.player_slots:
                                 if not server.player_slots[player_id].isBot:
                                     server.player_map_events_locks[player_id].acquire()
@@ -198,6 +198,20 @@ def bulletCollisionCheck(server):
                                     server.player_map_events_locks[player_id].release()
                             server.bullet_objects.remove(bullet)
                             break
+
+###TO DO - When tanks collide do something so they don't overlap each other xD
+def tankCollisionCheck(server):
+    for checking_player in (server.teams.get("Green").players + server.teams.get("Red").players):
+        for checked_player in (server.teams.get("Green").players + server.teams.get("Red").players):
+            if checked_player == checked_player:
+                continue
+            else:
+                checking_player_down_tank_boundary, checking_player_left_tank_boundary, \
+                checking_player_right_tank_boundary, checking_player_upper_tank_boundary = calculateTankBoundaries(checking_player.tank)
+
+                checked_player_down_tank_boundary, checked_player_left_tank_boundary, \
+                checked_player_right_tank_boundary, checked_player_upper_tank_boundary = calculateTankBoundaries(checked_player.tank)
+
 
 
 def calculateTankBoundaries(tank):

@@ -1,3 +1,5 @@
+import os
+
 import pygame
 
 from Tank1990.resources.MapHandler.Map import Map
@@ -23,11 +25,23 @@ class Client:
         self.network: Network = Network()
         createPlayerMessageObject: PlayerCreateMessage = pickle.loads(self.network.getInitPlayerObject())
         self.player: Player = createPlayerMessageObject.player
-
+        self.issuing_orders = False
         self.bulletObjects = []
         self.tankObjects = []
         self.eventObjects = []
         self.map = self.initializeMapOutline(createPlayerMessageObject.mapOutline)
+        self.clicked_grid = (None, None)
+        self.grid_outline_image = pygame.image.load("../img/green_square_outline.png") if self.player.team.color == GREEN \
+            else pygame.image.load("../img/orange_square_outline.png")
+        self.grid_outline_image = pygame.transform.scale(self.grid_outline_image, (INTERVAL_VERTICAL, INTERVAL_HORIZONTAL))
+
+    def displayCommunicates(self):
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        if self.issuing_orders:
+            text = font.render('YOU ARE NOW ISSUING ORDERS', True, BRIGHT_YELLOW)
+            textRect = text.get_rect()
+            textRect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT - 32)
+            self.win.blit(text, textRect)
 
     def initializeMapOutline(self, mapOutline):
         map = Map()
@@ -46,11 +60,32 @@ class Client:
             self.network.send(TankUpdateMessage(DOWN_UNIT_VECTOR).getMessage())
 
 
+
+    def issueOrderCheck(self):
+
+            for event in pygame.event.get():
+                if self.issuing_orders:
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        pos = pygame.mouse.get_pos()
+                        X_grid = int(pos[0]//INTERVAL_HORIZONTAL)
+                        Y_grid = int(pos[1]//INTERVAL_VERTICAL)
+                        self.clicked_grid = (X_grid * INTERVAL_HORIZONTAL, Y_grid * INTERVAL_VERTICAL)
+                if event.type == pygame.KEYUP and event.key == pygame.K_o:
+                    self.issuing_orders = not self.issuing_orders
+
+
+
+
+
+
+
+
+
     def crowdControlCheck(self):
         keys = pygame.key.get_pressed()
         follow_request = False
 
-        if keys[pygame.K_f]:
+        if keys[pygame.K_f] and self.issuing_orders:
             follow_request =  not follow_request
             self.network.send(CreateCrowdFollowMessage(self.player.tank, follow_request).getMessage())
 
@@ -69,6 +104,12 @@ class Client:
     def redrawWindow(self):
         self.win.fill((0, 0, 0))
         self.map.draw(self.win)
+
+
+        if self.clicked_grid != (None, None):
+            self.win.blit(self.grid_outline_image, self.clicked_grid)
+
+
         for bullet in self.bulletObjects:
             bullet.draw(self.win)
 
@@ -82,13 +123,19 @@ class Client:
                 self.eventObjects.remove(event)
             else:
                 event.draw(self.win)
-
+        self.displayCommunicates()
 
         pygame.display.update()
 
 
 
 def main():
+    pygame.init()
+    if os.path.exists("../sound/sabaton-ghost-division-8bit.mp3"):
+        pygame.mixer.init()
+        pygame.mixer.music.load("../sound/sabaton-ghost-division-8bit.mp3")
+        pygame.mixer.music.play(-1)
+
     client = Client()
     clock = pygame.time.Clock()
     while client.running:
@@ -100,7 +147,9 @@ def main():
         client.tankMoveCheck()
         client.shootCheck()
         client.updateGameObjects()
+
         client.crowdControlCheck()
+        client.issueOrderCheck()
         client.redrawWindow()
 
 

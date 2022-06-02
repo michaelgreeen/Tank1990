@@ -113,7 +113,8 @@ venv/
 
 .idea
 .vscode
-
+Tank1990/app/game/img
+Tank1990/app/game/sound
 # Spyder project settings
 .spyderproject
 .spyproject
