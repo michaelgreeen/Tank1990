@@ -68,12 +68,10 @@ class Tank:
         return down_tank_boundary, left_tank_boundary, right_tank_boundary, upper_tank_boundary
 
     def checkMovingCollision(self, mapOutline, prevX, prevY):
-        #conditionDown,conditionLeft,conditionRight,conditionUp = self.calculateTankBoundaries()
-
-        conditionRight = float(self.x + self.width)
-        conditionLeft = float(self.x - self.vel - self.width)
-        conditionUp = float(self.y - self.vel - self.height)
-        conditionDown = float(self.y + self.height)
+        conditionRight = self.x + self.width
+        conditionLeft = self.x - self.vel - self.width
+        conditionUp = self.y - self.vel - self.height
+        conditionDown = self.y + self.height
 
         for i in range(MAP_ROWS):
             for j in range(MAP_COLUMNS):
@@ -109,8 +107,6 @@ class Tank:
             self.y += self.vel
             self.direction_vector = DOWN_UNIT_VECTOR
             self.checkMovingCollision(mapOutline,self.x, self.y - self.vel)
-
-
 
     def update(self):
         if self.shooting_cooldown > 0:

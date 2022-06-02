@@ -55,8 +55,6 @@ def scanForEnemy(selfBotNumber, server):
 
 
 
-
-
 def botMove(bot_number, server, playerTankRequestTuple):
     shortestDistance = 1000000
     shortest_index = -1
@@ -131,6 +129,7 @@ def updateTanks(server):
         if player_tank is not None:
             # if checkMovingCollision(player_tank,server.mapOutline):
             player_tank.move(direction_vector, server.mapOutline)
+            tankCollisionCheck(direction_vector,server)
     for player in (server.teams.get("Green").players + server.teams.get("Red").players):
         player_tank = player.tank
         if player_tank is not None:
@@ -159,6 +158,7 @@ def updateBullets(server):
 
 
 def bulletCollisionCheck(server):
+    playersOnMap = server.teams.get("Green").players + server.teams.get("Red").players
     for bullet in server.bullet_objects:
         bullet_x_grid = floor(bullet.x / INTERVAL_HORIZONTAL)
         bullet_y_grid = floor(bullet.y / INTERVAL_VERTICAL)
@@ -169,9 +169,11 @@ def bulletCollisionCheck(server):
             server.bullet_objects.remove(bullet)
             continue
         if not (bullet_x_grid >= MAP_COLUMNS or bullet_x_grid < 0 or bullet_y_grid >= MAP_ROWS or bullet_y_grid < 0):
-            if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][
-                bullet_x_grid] == 3:
-                server.mapOutline[bullet_y_grid][bullet_x_grid] = 2
+            if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1 or server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
+                if server.mapOutline[bullet_y_grid][bullet_x_grid] == 1:
+                    server.mapOutline[bullet_y_grid][bullet_x_grid] = 0
+                elif server.mapOutline[bullet_y_grid][bullet_x_grid] == 3:
+                    server.mapOutline[bullet_y_grid][bullet_x_grid] = 4
                 for player_id in server.player_slots:
                     if not server.player_slots[player_id].isBot:
                         server.player_map_events_locks[player_id].acquire()
@@ -180,7 +182,7 @@ def bulletCollisionCheck(server):
                 server.bullet_objects.remove(bullet)
                 continue
 
-        for player in (server.teams.get("Green").players + server.teams.get("Red").players):
+        for player in playersOnMap:
             tank = player.tank
             if tank is not None and bullet is not None:
                 if bullet.color != player.team.color:
@@ -211,17 +213,47 @@ def bulletCollisionCheck(server):
                             break
 
 ###TO DO - When tanks collide do something so they don't overlap each other xD
-def tankCollisionCheck(server):
-    for checking_player in (server.teams.get("Green").players + server.teams.get("Red").players):
-        for checked_player in (server.teams.get("Green").players + server.teams.get("Red").players):
-            if checked_player == checked_player:
-                continue
-            else:
-                checking_player_down_tank_boundary, checking_player_left_tank_boundary, \
-                checking_player_right_tank_boundary, checking_player_upper_tank_boundary = calculateTankBoundaries(checking_player.tank)
+def tankCollisionCheck(vector,server):
+    playersOnMap = server.teams.get("Green").players + server.teams.get("Red").players
 
-                checked_player_down_tank_boundary, checked_player_left_tank_boundary, \
-                checked_player_right_tank_boundary, checked_player_upper_tank_boundary = calculateTankBoundaries(checked_player.tank)
+    for checking_player in playersOnMap:
+        for checked_player in playersOnMap:
+            if checking_player == checked_player:
+                continue
+            # else:
+            #     checked_rect = pygame.Rect(checked_player.tank.x,checked_player.tank.y,VEHICLE_HEIGHT,VEHICLE_HEIGHT)
+            #     checking_rect = pygame.Rect(checking_player.tank.x,checking_player.tank.y,checking_player.tank.width,checking_player.tank.height)
+            #     if checked_rect.colliderect(checking_rect):
+            #         if checking_rect.top <= checked_rect.bottom and vector == UP_UNIT_VECTOR:
+            #             checking_player.tank.move(DOWN_UNIT_VECTOR,server.mapOutline)
+            #         elif checking_rect.right >= checked_rect.left and vector == RIGHT_UNIT_VECTOR:
+            #             checking_player.tank.move(LEFT_UNIT_VECTOR,server.mapOutline)
+            #         elif checking_rect.left <= checked_rect.right and vector == LEFT_UNIT_VECTOR:
+            #             checking_player.tank.move(RIGHT_UNIT_VECTOR,server.mapOutline)
+            #         elif checking_rect.bottom >= checked_rect.top and vector == DOWN_UNIT_VECTOR:
+            #             checking_player.tank.move(UP_UNIT_VECTOR,server.mapOutline)
+
+            else:
+                checked_rect = pygame.Rect(checked_player.tank.x,checked_player.tank.y,VEHICLE_HEIGHT,VEHICLE_HEIGHT)
+                checking_rect = pygame.Rect(checking_player.tank.x,checking_player.tank.y,checking_player.tank.width,checking_player.tank.height)
+
+                if checked_rect.colliderect(checking_rect):
+                    if checking_rect.top <= checked_rect.bottom and vector == UP_UNIT_VECTOR:
+                        checking_player.tank.move(DOWN_UNIT_VECTOR,server.mapOutline)
+                        checking_player.tank.direction_vector = DOWN_UNIT_VECTOR
+                        checked_player.tank.direction_vector = UP_UNIT_VECTOR
+                    elif checking_rect.right >= checked_rect.left and vector == RIGHT_UNIT_VECTOR:
+                        checking_player.tank.move(LEFT_UNIT_VECTOR,server.mapOutline)
+                        checking_player.tank.direction_vector = LEFT_UNIT_VECTOR
+                        checked_player.tank.direction_vector = UP_UNIT_VECTOR
+                    elif checking_rect.left <= checked_rect.right and vector == LEFT_UNIT_VECTOR:
+                        checking_player.tank.move(RIGHT_UNIT_VECTOR,server.mapOutline)
+                        checking_player.tank.direction_vector = RIGHT_UNIT_VECTOR
+                        checked_player.tank.direction_vector = LEFT_UNIT_VECTOR
+                    elif checking_rect.bottom >= checked_rect.top and vector == DOWN_UNIT_VECTOR:
+                        checking_player.tank.move(UP_UNIT_VECTOR,server.mapOutline)
+                        checking_player.tank.direction_vector = UP_UNIT_VECTOR
+                        checked_player.tank.direction_vector = DOWN_UNIT_VECTOR
 
 
 

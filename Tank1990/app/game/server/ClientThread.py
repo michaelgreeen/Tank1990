@@ -19,8 +19,6 @@ def clientThread(server, connection, player_number):
     initPlayerMessage = PlayerCreateMessage(player, server.mapOutline)
     connection.send(initPlayerMessage.getMessage())
 
-
-
     while True:
         try:
             

@@ -105,13 +105,12 @@ class Client:
 
 
 
-
     def crowdControlCheck(self):
         keys = pygame.key.get_pressed()
         follow_request = False
 
         if keys[pygame.K_f] and self.issuing_orders:
-            follow_request =  not follow_request
+            follow_request = not follow_request
             self.network.send(CreateCrowdFollowMessage(self.player.tank, follow_request).getMessage())
 
     def shootCheck(self):
@@ -129,15 +128,11 @@ class Client:
     def redrawWindow(self):
         self.win.fill((0, 0, 0))
         self.map.draw(self.win)
-
-
         if self.target_grid is not None:
             self.win.blit(self.grid_outline_image, self.target_grid)
 
-
         for bullet in self.bulletObjects:
             bullet.draw(self.win)
-
 
         for tank in self.tankObjects:
             tank.draw(self.win)
@@ -152,14 +147,12 @@ class Client:
 
         pygame.display.update()
 
-
-
 def main():
     pygame.init()
     if os.path.exists("../sound/sabaton-ghost-division-8bit.mp3"):
         pygame.mixer.init()
         pygame.mixer.music.load("../sound/sabaton-ghost-division-8bit.mp3")
-        pygame.mixer.music.play(-1)
+        pygame.mixer.music.play(1)
 
     client = Client()
     clock = pygame.time.Clock()
