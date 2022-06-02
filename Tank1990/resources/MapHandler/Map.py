@@ -9,6 +9,7 @@ class Map:
         self.sand = pygame.transform.scale(pygame.image.load("..\\img\\sandBeige.png").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
         self.barrelGreen = pygame.transform.scale(pygame.image.load("..\\img\\barrelGreen_side.png").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
         self.fastAsphalt = pygame.transform.scale(pygame.image.load("..\\img\\fast-asphalt.png").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
+        self.water = pygame.transform.scale(pygame.image.load("..\\img\\water.jpg").convert(),(INTERVAL_HORIZONTAL,INTERVAL_VERTICAL))
     def draw(self, win):
         for i in range(MAP_ROWS):
             for j in range(MAP_COLUMNS):
@@ -22,3 +23,5 @@ class Map:
                     win.blit(self.barrelGreen,(INTERVAL_VERTICAL * j, INTERVAL_HORIZONTAL * i))
                 elif self.MapObjects[i][j] == 4:
                     win.blit(self.fastAsphalt,(INTERVAL_VERTICAL * j, INTERVAL_HORIZONTAL * i))
+                elif self.MapObjects[i][j] == 5:
+                    win.blit(self.water,(INTERVAL_VERTICAL * j, INTERVAL_HORIZONTAL * i))
