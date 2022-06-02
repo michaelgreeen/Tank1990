@@ -4,6 +4,7 @@ class Team:
         self.name = name
         self.color = color
         self.order_issuing_player = None
+        self.target_grid = None
         self.players = []
 
 

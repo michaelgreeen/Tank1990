@@ -22,7 +22,7 @@ class Server:
         self.bullet_objects_queue = []
 
         #Player slots with approporiate id's
-        self.player_slots = {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
+        self.player_slots = {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None}
 
         self.message_queues_lock = {"PLAYER_MOVE_LOCK": Lock(), "BULLET_CREATE_LOCK": Lock(), "FOLLOW_EVENT_LOCK": Lock()}
         self.player_map_events_locks = [Lock(), Lock(), Lock(), Lock(), Lock(), Lock(), Lock(), Lock(), Lock(), Lock(), Lock()]
@@ -70,8 +70,8 @@ class Server:
             player.assignToTeam(teamGreen)
 
     def removePlayer(self, player: Player):
-        teamGreen:Team = self.teams.get("Green")
-        teamRed:Team = self.teams.get("Red")
+        teamGreen = self.teams.get("Green")
+        teamRed = self.teams.get("Red")
         if player in teamGreen.players:
             teamGreen.removePlayer(player)
         if player in teamRed.players:
@@ -81,8 +81,8 @@ class Server:
         try:
             self.socket.bind((ipAddress, port))
         except socket.error as e:
-            str(e)
-        self.socket.listen(len(self.player_slots))
+            print(str(e))
+        self.socket.listen(PLAYER_COUNT)
         print("Waiting for a connection, Server Started")
 
 

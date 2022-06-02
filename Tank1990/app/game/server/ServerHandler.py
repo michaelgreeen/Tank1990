@@ -39,21 +39,26 @@ def handleBots(server):
 def scanForEnemy(selfBotNumber, server):
     scanner_tank = server.player_slots[selfBotNumber].player.tank
     for bot_number in range(PLAYER_COUNT):
-        enemy_tank = server.player_slots[bot_number].player.tank
-        if bot_number == selfBotNumber:
-            continue
-        if enemy_tank:
-            if enemy_tank.color is not scanner_tank.color:
-                C = scanner_tank.center
-                A = (enemy_tank.x, enemy_tank.y)
-                B = (enemy_tank.x + enemy_tank.width, enemy_tank.y + enemy_tank.height)
-                if dist(A,C) + dist(C,B) >= dist(A,B):
-                    botShoot(bot_number, server)
+        if server.player_slots[bot_number].isBot:
+            enemy_tank = server.player_slots[bot_number].player.tank
+            if bot_number == selfBotNumber:
+                continue
+            if enemy_tank:
+                if enemy_tank.color is not scanner_tank.color:
+                    C = scanner_tank.center
+                    A = (enemy_tank.x, enemy_tank.y)
+                    B = (enemy_tank.x + enemy_tank.width, enemy_tank.y + enemy_tank.height)
+                    if dist(A,C) + dist(C,B) >= dist(A,B):
+                        botShoot(bot_number, server)
+                        #print(time.time())
+                        #print("Found potential shooting target")
+
+
 
 def botMove(bot_number, server, playerTankRequestTuple):
     shortestDistance = 1000000
     shortest_index = -1
-    bot:Tank = server.player_slots[bot_number].player.tank \
+    bot = server.player_slots[bot_number].player.tank \
         if server.player_slots[bot_number].player.tank is not None else None
 
     condition = True if ((playerTankRequestTuple is not None) and (bot is not None)) else False
@@ -70,7 +75,17 @@ def botMove(bot_number, server, playerTankRequestTuple):
 
                     if distances[min_index] < shortestDistance:
                         shortest_index = min_index
-
+    if server.player_slots[bot_number].player.team.target_grid is not None:
+        grid = (server.player_slots[bot_number].player.team.target_grid[0] + INTERVAL_HORIZONTAL//2,
+                server.player_slots[bot_number].player.team.target_grid[1] + INTERVAL_VERTICAL//2)
+        # check if distance is lower after movement in some of directions
+        distances = [dist((bot.x + VEHICLE_VELOCITY, bot.y), grid),
+                     dist((bot.x - VEHICLE_VELOCITY, bot.y), grid),
+                     dist((bot.x, bot.y - VEHICLE_VELOCITY), grid),
+                     dist((bot.x, bot.y + VEHICLE_VELOCITY), grid)]
+        min_index = distances.index(min(distances))
+        if distances[min_index] < shortestDistance:
+                shortest_index = min_index
     decideOnBotMovement(bot, bot_number, server, shortest_index)
 
 

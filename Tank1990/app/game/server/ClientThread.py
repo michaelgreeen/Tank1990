@@ -4,6 +4,7 @@ from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage im
 from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
 from Tank1990.resources.message_types.crowdControlMessage.RequestOrderIssuance import RequestOrderIssuance
 from Tank1990.resources.message_types.crowdControlMessage.CreateCrowdFollowMessage import CreateCrowdFollowMessage
+from Tank1990.resources.message_types.crowdControlMessage.TargetGridMessage import TargetGridMessage
 from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
 from Tank1990.resources.message_types.playerCreateMessage.PlayerCreateMessage import PlayerCreateMessage
 from Tank1990.resources.message_types.requestMapEvents.RequestMapEvents import RequestMapEvents
@@ -41,10 +42,10 @@ def clientThread(server, connection, player_number):
                 connection.sendall(reply.getMessage())
 
             elif isinstance(data, TankUpdateRequest):
-                for player in server.teams.get("Red").players + server.teams.get("Green").players:
-                    tank = player.tank
+                for player_entry in server.teams.get("Red").players + server.teams.get("Green").players:
+                    tank = player_entry.tank
                     if tank is not None:
-                        data.tanks.append(player.tank)
+                        data.tanks.append(player_entry.tank)
                 reply = data
                 connection.sendall(reply.getMessage())
 
@@ -70,21 +71,27 @@ def clientThread(server, connection, player_number):
 
             elif isinstance(data, CreateCrowdFollowMessage):
                 server.message_queues_lock.get("FOLLOW_EVENT_LOCK").acquire()
-                server.message_queues.get("FOLLOW_EVENT").append((data.tank,data.followRequest))
+                server.message_queues.get("FOLLOW_EVENT").append((data.tank, data.followRequest))
                 server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()
                 data.tank = server.player_slots[player_number].player.tank
                 reply = data
                 connection.sendall(reply.getMessage())
 
             elif isinstance(data, RequestOrderIssuance):
-                if player.team.order_issuing_player == None:
+                if data.issuing_player_id is None:
+                    if player.team.order_issuing_player is not None:
+                        data.issuing_player_id = player.team.order_issuing_player.id
+                else:
                     player.team.order_issuing_player = player
                     data.issuing_player_id = player_number
-                elif player.team.order_issuing_player == player:
-                    player.team.order_issuing_player = None
-                    data.issuing_player_id = None
-                else:
-                    data.issuing_player_id = player.team.order_issuing_player.id
+
+                reply = data
+                connection.sendall(reply.getMessage())
+
+            elif isinstance(data, TargetGridMessage):
+                if player.team.order_issuing_player == player:
+                    player.team.target_grid = data.target_grid
+                data.target_grid = player.team.target_grid
                 reply = data
                 connection.sendall(reply.getMessage())
 
