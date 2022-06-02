@@ -21,6 +21,7 @@ class Tank:
         self.shooting_cooldown = 0
         self.body_img_path = ""
         self.barrel_img_path = ""
+        self.move_order_issued = False
         #self.DEBUG = True if self.x == 0 and self.y == 0 else False
         if color == RED:
             self.body_img_path = "tankRed_outline.png"
@@ -99,7 +100,7 @@ class Tank:
         if vector == RIGHT_UNIT_VECTOR and (self.x + self.width + self.vel <= SCREEN_WIDTH):
             self.x += self.vel
             self.direction_vector = RIGHT_UNIT_VECTOR
-            self.checkMovingCollision(mapOutline,self.x - self.vel,self.y)
+            self.checkMovingCollision(mapOutline, self.x - self.vel, self.y)
         if vector == UP_UNIT_VECTOR and (self.y - self.vel >= 0):
             self.y -= self.vel
             self.direction_vector = UP_UNIT_VECTOR
