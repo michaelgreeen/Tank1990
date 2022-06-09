@@ -2,6 +2,7 @@ import pickle
 
 from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.AttackOrderMessage import AttackOrderMessage
 from Tank1990.resources.message_types.crowdControlMessage.RequestOrderIssuance import RequestOrderIssuance
 from Tank1990.resources.message_types.crowdControlMessage.CreateCrowdFollowMessage import CreateCrowdFollowMessage
 from Tank1990.resources.message_types.crowdControlMessage.TargetGridMessage import TargetGridMessage
@@ -94,6 +95,13 @@ def clientThread(server, connection, player_number):
                 data.target_grid = player.team.target_grid
                 reply = data
                 connection.sendall(reply.getMessage())
+
+            elif isinstance(data, AttackOrderMessage):
+                if player.team.order_issuing_player == player:
+                    data.target_grid = None
+                    player.team.attack_closest_enemy = data.attack_closest_enemy
+                    reply = data
+                    connection.sendall(reply.getMessage())
 
             else:
                 pass

@@ -1,7 +1,7 @@
 import pickle
 
 
-class RequestOrderIssuance():
+class RequestOrderIssuance:
     def __init__(self, player_id):
         self.issuing_player_id = player_id
 

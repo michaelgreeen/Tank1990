@@ -1,3 +1,5 @@
+import math
+
 import pygame
 import random
 from math import dist, floor
@@ -31,7 +33,7 @@ def handleBots(server):
     for bot_number in range(PLAYER_COUNT):
         if server.player_slots[bot_number].isBot:
             botMove(bot_number, server, playerTankRequestTuple)
-            if random.randint(0, 1000) < 2 and server.player_slots[bot_number].player.tank is not None:
+            if random.randint(0, 1000) < 2 and server.player_slots[bot_number].player.tank is not None and not server.player_slots[bot_number].player.team.attack_closest_enemy:
                 scanForEnemy(bot_number,server)
     server.message_queues.get("FOLLOW_EVENT").clear()
     server.message_queues_lock.get("FOLLOW_EVENT_LOCK").release()
@@ -52,6 +54,20 @@ def scanForEnemy(selfBotNumber, server):
                         botShoot(bot_number, server)
                         #print(time.time())
                         #print("Found potential shooting target")
+
+
+def getClosestEnemy(server, tank):
+    distance = 9999
+    closest_tank = None
+    for player_id in server.player_slots:
+        if server.player_slots[player_id].player.tank.color != tank.color:
+            enemy_tank = server.player_slots[player_id].player.tank
+            distance_to_tank = math.sqrt((tank.x - enemy_tank.x)**2 + (tank.y - enemy_tank.y)**2)
+            if distance_to_tank < distance:
+                distance = distance_to_tank
+                closest_tank = enemy_tank
+    return closest_tank
+
 
 
 
@@ -75,6 +91,8 @@ def botMove(bot_number, server, playerTankRequestTuple):
 
                     if distances[min_index] < shortestDistance:
                         shortest_index = min_index
+
+
     if server.player_slots[bot_number].player.team.target_grid is not None:
         grid = (server.player_slots[bot_number].player.team.target_grid[0] + INTERVAL_HORIZONTAL//2,
                 server.player_slots[bot_number].player.team.target_grid[1] + INTERVAL_VERTICAL//2)
@@ -86,7 +104,28 @@ def botMove(bot_number, server, playerTankRequestTuple):
         min_index = distances.index(min(distances))
         if distances[min_index] < shortestDistance:
                 shortest_index = min_index
+
+
+    elif server.player_slots[bot_number].player.team.attack_closest_enemy:
+        closest_enemy_tank = getClosestEnemy(server, bot)
+        bot_x_grid, bot_y_grid = int(bot.x//INTERVAL_HORIZONTAL), int(bot.y//INTERVAL_VERTICAL)
+        enemy_x_grid, enemy_y_grid = int(closest_enemy_tank.x // INTERVAL_HORIZONTAL), int(closest_enemy_tank.y // INTERVAL_VERTICAL)
+        if enemy_y_grid < bot_y_grid:
+            addBotMovementToQueue(bot_number, server, vector=UP_UNIT_VECTOR)
+
+        elif enemy_y_grid > bot_y_grid:
+            addBotMovementToQueue(bot_number, server, vector=DOWN_UNIT_VECTOR)
+
+        elif bot.shooting_cooldown == 0:
+            if enemy_x_grid > bot_x_grid:
+                bot.direction_vector = RIGHT_UNIT_VECTOR
+            else:
+                bot.direction_vector = LEFT_UNIT_VECTOR
+            botShoot(bot_number, server)
+        return
     decideOnBotMovement(bot, bot_number, server, shortest_index)
+
+
 
 
 def decideOnBotMovement(bot, bot_number, server, shortest_index):
