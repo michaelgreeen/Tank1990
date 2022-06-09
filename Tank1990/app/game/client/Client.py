@@ -37,10 +37,10 @@ class Client:
         self.grid_outline_image = pygame.image.load("../img/green_square_outline.png") if self.player.team.color == GREEN \
             else pygame.image.load("../img/orange_square_outline.png")
         self.grid_outline_image = pygame.transform.scale(self.grid_outline_image, (INTERVAL_VERTICAL, INTERVAL_HORIZONTAL))
+        self.order_communicate = NO_ORDERS_COMMUNICATE
 
     def displayCommunicates(self):
         font = pygame.font.Font('freesansbold.ttf', 32)
-        content = ""
         if self.issuing_orders:
             content = "YOU ARE ISSUING ORDERS"
         else:
@@ -48,11 +48,14 @@ class Client:
             if self.order_issuing_player_id is not None:
                 content += " - PLAYER " + str(self.order_issuing_player_id) + " IS."
 
-
+        order_text = font.render(self.order_communicate, True, RED)
+        orderTextRect = order_text.get_rect()
         text = font.render(content, True, BRIGHT_YELLOW)
         textRect = text.get_rect()
         textRect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT - 32)
+        orderTextRect.center = (SCREEN_WIDTH, SCREEN_HEIGHT + 32)
         self.win.blit(text, textRect)
+        self.win.blit(order_text, orderTextRect)
 
     def initializeMapOutline(self, mapOutline):
         map = Map()
