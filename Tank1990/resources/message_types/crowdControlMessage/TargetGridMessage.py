@@ -1,7 +1,7 @@
 import pickle
 
 
-class TargetGridMessage():
+class TargetGridMessage:
     def __init__(self, target_grid):
         self.target_grid = target_grid
 

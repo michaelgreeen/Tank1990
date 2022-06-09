@@ -5,6 +5,7 @@ class Team:
         self.color = color
         self.order_issuing_player = None
         self.target_grid = None
+        self.attack_closest_enemy = False
         self.players = []
 
 

@@ -9,6 +9,7 @@ from Tank1990.resources.configuration.Common import *
 import pickle
 from Tank1990.resources.message_types.bulletCreateMessage.BulletCreateMessage import BulletCreateMessage
 from Tank1990.resources.message_types.bulletCreateMessage.BulletUpdateRequest import BulletUpdateRequest
+from Tank1990.resources.message_types.crowdControlMessage.AttackOrderMessage import AttackOrderMessage
 from Tank1990.resources.message_types.crowdControlMessage.RequestOrderIssuance import RequestOrderIssuance
 from Tank1990.resources.message_types.crowdControlMessage.TargetGridMessage import TargetGridMessage
 from Tank1990.resources.message_types.mapUpdateMessage.MapUpdateMessage import MapUpdateMessage
@@ -38,6 +39,7 @@ class Client:
             else pygame.image.load("../img/orange_square_outline.png")
         self.grid_outline_image = pygame.transform.scale(self.grid_outline_image, (INTERVAL_VERTICAL, INTERVAL_HORIZONTAL))
         self.order_communicate = NO_ORDERS_COMMUNICATE
+        self.attack_closest_enemy_order = False
 
     def displayCommunicates(self):
         font = pygame.font.Font('freesansbold.ttf', 32)
@@ -53,7 +55,7 @@ class Client:
         text = font.render(content, True, BRIGHT_YELLOW)
         textRect = text.get_rect()
         textRect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT - 32)
-        orderTextRect.center = (SCREEN_WIDTH, SCREEN_HEIGHT + 32)
+        orderTextRect.center = (SCREEN_WIDTH//2, 32)
         self.win.blit(text, textRect)
         self.win.blit(order_text, orderTextRect)
 
@@ -84,8 +86,19 @@ class Client:
                     X_grid = int(pos[0]//INTERVAL_HORIZONTAL)
                     Y_grid = int(pos[1]//INTERVAL_VERTICAL)
                     self.clicked_grid = (X_grid * INTERVAL_HORIZONTAL, Y_grid * INTERVAL_VERTICAL)
-            if event.type == pygame.KEYUP and event.key == pygame.K_c:
-                self.clicked_grid = None
+                    self.order_communicate = GO_TO_ORDER_COMMUNICATE
+                if event.type == pygame.KEYUP and event.key == pygame.K_c and not self.clicked_grid is None:
+                    self.clicked_grid = None
+                    self.order_communicate = NO_ORDERS_COMMUNICATE
+
+                if event.type == pygame.KEYUP and event.key == pygame.K_a:
+                    self.attack_closest_enemy_order = True
+                    self.order_communicate = ATTACK_ORDER_COMMUNICATE
+
+                if event.type == pygame.KEYUP and event.key == pygame.K_z and self.attack_closest_enemy_order:
+                    self.attack_closest_enemy_order = False
+                    self.order_communicate = NO_ORDERS_COMMUNICATE
+
 
             if event.type == pygame.KEYUP and event.key == pygame.K_o:
                 order_check_message.issuing_player_id = self.player.id
@@ -94,16 +107,20 @@ class Client:
             self.issuing_orders = True
         else:
             self.issuing_orders = False
+            self.attack_closest_enemy_order = False
             self.clicked_grid = None
 
 
-    def provideTeamGrid(self):
+    def issueOrders(self):
         if self.issuing_orders:
             selected_grid = self.clicked_grid
-        else:
-            selected_grid = None
-        msg = self.network.send(TargetGridMessage(selected_grid).getMessage())
-        self.target_grid = pickle.loads(msg).target_grid
+            msg = self.network.send(TargetGridMessage(selected_grid).getMessage())
+            self.target_grid = pickle.loads(msg).target_grid
+        if self.issuing_orders and self.attack_closest_enemy_order:
+            msg = self.network.send(AttackOrderMessage(self.attack_closest_enemy_order).getMessage())
+
+
+
 
 
 
@@ -167,7 +184,7 @@ def main():
         client.tankMoveCheck()
         client.shootCheck()
         client.updateGameObjects()
-        client.provideTeamGrid()
+        client.issueOrders()
         client.crowdControlCheck()
         client.issueOrderCheck()
         client.redrawWindow()
