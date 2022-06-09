@@ -158,9 +158,8 @@ def main():
         pygame.mixer.music.play(1)
 
     client = Client()
-    clock = pygame.time.Clock()
+
     while client.running:
-        clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 client.running = False

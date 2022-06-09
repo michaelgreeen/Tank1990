@@ -218,43 +218,30 @@ def tankCollisionCheck(vector,server):
 
     for checking_player in playersOnMap:
         for checked_player in playersOnMap:
+
             if checking_player == checked_player:
                 continue
-            # else:
-            #     checked_rect = pygame.Rect(checked_player.tank.x,checked_player.tank.y,VEHICLE_HEIGHT,VEHICLE_HEIGHT)
-            #     checking_rect = pygame.Rect(checking_player.tank.x,checking_player.tank.y,checking_player.tank.width,checking_player.tank.height)
-            #     if checked_rect.colliderect(checking_rect):
-            #         if checking_rect.top <= checked_rect.bottom and vector == UP_UNIT_VECTOR:
-            #             checking_player.tank.move(DOWN_UNIT_VECTOR,server.mapOutline)
-            #         elif checking_rect.right >= checked_rect.left and vector == RIGHT_UNIT_VECTOR:
-            #             checking_player.tank.move(LEFT_UNIT_VECTOR,server.mapOutline)
-            #         elif checking_rect.left <= checked_rect.right and vector == LEFT_UNIT_VECTOR:
-            #             checking_player.tank.move(RIGHT_UNIT_VECTOR,server.mapOutline)
-            #         elif checking_rect.bottom >= checked_rect.top and vector == DOWN_UNIT_VECTOR:
-            #             checking_player.tank.move(UP_UNIT_VECTOR,server.mapOutline)
-
             else:
                 checked_rect = pygame.Rect(checked_player.tank.x,checked_player.tank.y,VEHICLE_HEIGHT,VEHICLE_HEIGHT)
                 checking_rect = pygame.Rect(checking_player.tank.x,checking_player.tank.y,checking_player.tank.width,checking_player.tank.height)
 
                 if checked_rect.colliderect(checking_rect):
                     if checking_rect.top <= checked_rect.bottom and vector == UP_UNIT_VECTOR:
-                        checking_player.tank.move(DOWN_UNIT_VECTOR,server.mapOutline)
-                        checking_player.tank.direction_vector = DOWN_UNIT_VECTOR
-                        checked_player.tank.direction_vector = UP_UNIT_VECTOR
-                    elif checking_rect.right >= checked_rect.left and vector == RIGHT_UNIT_VECTOR:
-                        checking_player.tank.move(LEFT_UNIT_VECTOR,server.mapOutline)
-                        checking_player.tank.direction_vector = LEFT_UNIT_VECTOR
-                        checked_player.tank.direction_vector = UP_UNIT_VECTOR
-                    elif checking_rect.left <= checked_rect.right and vector == LEFT_UNIT_VECTOR:
-                        checking_player.tank.move(RIGHT_UNIT_VECTOR,server.mapOutline)
-                        checking_player.tank.direction_vector = RIGHT_UNIT_VECTOR
-                        checked_player.tank.direction_vector = LEFT_UNIT_VECTOR
-                    elif checking_rect.bottom >= checked_rect.top and vector == DOWN_UNIT_VECTOR:
-                        checking_player.tank.move(UP_UNIT_VECTOR,server.mapOutline)
-                        checking_player.tank.direction_vector = UP_UNIT_VECTOR
-                        checked_player.tank.direction_vector = DOWN_UNIT_VECTOR
+                        onCollisionMove(checked_player, checking_player, server.mapOutline, DOWN_UNIT_VECTOR, UP_UNIT_VECTOR)
 
+                    elif checking_rect.right >= checked_rect.left and vector == RIGHT_UNIT_VECTOR:
+                        onCollisionMove(checked_player, checking_player, server.mapOutline, LEFT_UNIT_VECTOR, RIGHT_UNIT_VECTOR)
+
+                    elif checking_rect.left <= checked_rect.right and vector == LEFT_UNIT_VECTOR:
+                        onCollisionMove(checked_player, checking_player, server.mapOutline, RIGHT_UNIT_VECTOR, LEFT_UNIT_VECTOR)
+
+                    elif checking_rect.bottom >= checked_rect.top and vector == DOWN_UNIT_VECTOR:
+                        onCollisionMove(checked_player, checking_player, server.mapOutline, UP_UNIT_VECTOR, DOWN_UNIT_VECTOR)
+
+
+def onCollisionMove(checked_player, checking_player, mapOutline, checkingVector, checkedVector):
+    checking_player.tank.move(checkingVector, mapOutline)
+    checked_player.tank.move(checkedVector, mapOutline)
 
 
 def calculateTankBoundaries(tank):
